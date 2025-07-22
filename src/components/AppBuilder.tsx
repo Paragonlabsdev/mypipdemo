@@ -60,7 +60,7 @@ const AppBuilder = () => {
       <PanelGroup direction="horizontal" className="flex-1">
         {/* Chat Panel */}
         <Panel defaultSize={25} minSize={20} maxSize={40}>
-          <div className="h-full bg-background border-r border-border flex flex-col">
+          <div className="h-screen bg-background border-r border-border flex flex-col">
             <div className="p-4 border-b border-border">
               <h2 className="text-lg font-semibold">Chat</h2>
             </div>
@@ -111,7 +111,7 @@ const AppBuilder = () => {
 
         {/* Main Content - App Preview */}
         <Panel defaultSize={75} minSize={60}>
-          <div className="h-full flex flex-col">
+          <div className="h-screen flex flex-col">
             <div className="p-4 border-b border-border bg-background flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <img 
@@ -129,7 +129,7 @@ const AppBuilder = () => {
               </div>
             </div>
 
-            <div className="flex-1 flex items-center justify-center p-8">
+            <div className="flex-1 flex items-end justify-center pb-12">
               <Card className="w-80 h-[600px] bg-background border-2 border-border rounded-[2.5rem] p-8 flex flex-col items-center justify-center relative shadow-2xl">
                 {/* Phone notch simulation */}
                 <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-foreground rounded-full flex items-center justify-between px-2">
