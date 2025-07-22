@@ -1,8 +1,4 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
 import Builder from "./pages/Builder";
 import NotFound from "./pages/NotFound";
@@ -13,25 +9,18 @@ import Settings from "./pages/builder/Settings";
 
 const App = () => {
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/builder" element={<Builder />}>
-              <Route path="integrations" element={<Integrations />} />
-              <Route path="mypips" element={<MyPips />} />
-              <Route path="pricing" element={<Pricing />} />
-              <Route path="settings" element={<Settings />} />
-            </Route>
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/builder" element={<Builder />}>
+          <Route path="integrations" element={<Integrations />} />
+          <Route path="mypips" element={<MyPips />} />
+          <Route path="pricing" element={<Pricing />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
   );
 };
 
