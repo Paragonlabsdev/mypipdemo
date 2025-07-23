@@ -348,18 +348,6 @@ const AppBuilder = () => {
                   </div>
                   <span className="text-xs text-muted-foreground">{promptCount}/5 left</span>
                 </div>
-                
-                {/* API Keys Notice */}
-                <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <h4 className="font-medium text-yellow-800 text-xs mb-1">⚙️ Setup Required</h4>
-                  <p className="text-xs text-yellow-700 mb-2">
-                    Add API keys to Supabase environment variables:
-                  </p>
-                  <div className="text-xs text-yellow-700 space-y-1">
-                    <div>• OPENAI_API_KEY (required)</div>
-                    <div>• ANTHROPIC_API_KEY (required)</div>
-                  </div>
-                </div>
               </form>
             </div>
           </div>
