@@ -9,14 +9,12 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import React from "react";
 
 const AppBuilder = () => {
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const isBuilderRoot = location.pathname === "/builder";
   const initialPrompt = searchParams.get("prompt") || "";
-  const shouldAutoGenerate = searchParams.get("autoGenerate") === "true";
   const [inputValue, setInputValue] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [appContent, setAppContent] = useState({
@@ -30,64 +28,6 @@ const AppBuilder = () => {
   const [chatHistory, setChatHistory] = useState<Array<{type: 'user' | 'assistant', content: string}>>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
-
-  // Auto-generate app if coming from homepage preset
-  React.useEffect(() => {
-    if (shouldAutoGenerate && initialPrompt && !isGenerating && chatHistory.length === 0) {
-      handleAutoGenerate(initialPrompt);
-    }
-  }, [shouldAutoGenerate, initialPrompt]);
-
-  const handleAutoGenerate = async (prompt: string) => {
-    setIsGenerating(true);
-    setPromptCount(prev => prev + 1);
-    
-    // Add user message to chat
-    setChatHistory([{ type: 'user', content: prompt }]);
-
-    try {
-      // Call the AI app generator
-      const { data, error } = await supabase.functions.invoke('generate-app', {
-        body: { prompt }
-      });
-
-      if (error) {
-        console.error('Error generating app:', error);
-        setChatHistory(prev => [...prev, { 
-          type: 'assistant', 
-          content: `Error generating app: ${error.message}` 
-        }]);
-        setAppContent({
-          title: "Generation failed",
-          subtitle: "Please try again with a different prompt."
-        });
-      } else {
-        // Successfully generated app
-        setGeneratedApp(data);
-        setCurrentPage(data.pages[0]?.name || "Home");
-        setChatHistory(prev => [...prev, { 
-          type: 'assistant', 
-          content: `✅ Generated your ${prompt} app! It includes ${data.pages.length} pages: ${data.pages.map(p => p.name).join(', ')}. ${data.summary}` 
-        }]);
-        setAppContent({
-          title: data.pages[0]?.name || "Your App",
-          subtitle: data.summary || "App generated successfully!"
-        });
-      }
-    } catch (err) {
-      console.error('Failed to generate app:', err);
-      setChatHistory(prev => [...prev, { 
-        type: 'assistant', 
-        content: "Failed to generate app. Please check your connection and try again." 
-      }]);
-      setAppContent({
-        title: "Connection failed",
-        subtitle: "Please check your connection and try again."
-      });
-    }
-
-    setIsGenerating(false);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -195,14 +135,7 @@ const AppBuilder = () => {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <div className="flex items-center gap-2">
-                <img 
-                  src="/lovable-uploads/e2ab9d49-b3b4-4c1d-adf6-3fe5b2fe284d.png" 
-                  alt="Builder Icon" 
-                  className="w-6 h-6 rounded-full"
-                />
-                <span className="text-sm font-medium">myPip Builder</span>
-              </div>
+              <span className="text-sm font-medium">myPip Builder</span>
               <div className="flex items-center gap-2">
                 <Button 
                   variant="ghost" 
@@ -248,23 +181,23 @@ const AppBuilder = () => {
               {/* App Preview */}
               <div className="flex-1 flex items-center justify-center p-4 bg-hero-bg">
                 {!showCodeView ? (
-                  <div className="relative w-full max-w-[240px] h-[480px] bg-black rounded-[35px] p-2 shadow-2xl">
-                    <div className="w-full h-full bg-white rounded-[25px] relative overflow-hidden">
-                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-16 h-3 bg-black rounded-full"></div>
+                  <div className="relative w-full max-w-[280px] h-[500px] bg-black rounded-[40px] p-2 shadow-2xl">
+                    <div className="w-full h-full bg-white rounded-[30px] relative overflow-hidden">
+                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-20 h-4 bg-black rounded-full"></div>
                       
-                      <div className="absolute top-[8px] left-0 right-0 flex justify-between items-center px-3 text-black text-xs font-medium">
+                      <div className="absolute top-[10px] left-0 right-0 flex justify-between items-center px-4 text-black text-xs font-medium">
                         <span>9:41</span>
                         <div className="flex items-center gap-1">
-                          <div className="w-3 h-2 border border-black rounded-sm relative">
-                            <div className="w-2 h-1 bg-green-500 rounded-sm absolute left-0.5 top-0.5"></div>
+                          <div className="w-4 h-2 border border-black rounded-sm relative">
+                            <div className="w-3 h-1 bg-green-500 rounded-sm absolute left-0.5 top-0.5"></div>
                           </div>
                         </div>
                       </div>
 
-                      <div className="absolute top-8 left-0 right-0 bottom-6 flex flex-col overflow-hidden">
+                      <div className="absolute top-10 left-0 right-0 bottom-8 flex flex-col overflow-hidden">
                         {generatedApp ? (
-                          <div className="flex-1 p-2 overflow-y-auto">
-                            <div className="space-y-1">
+                          <div className="flex-1 p-3 overflow-y-auto">
+                            <div className="space-y-2">
                               {(() => {
                                 const currentPageData = generatedApp.pages.find(p => p.name === currentPage);
                                 if (!currentPageData) return null;
@@ -274,9 +207,9 @@ const AppBuilder = () => {
                                   if (!component) return null;
                                   
                                   return (
-                                    <div key={index} className="text-xs bg-gray-50 p-1.5 rounded border">
-                                      <div className="font-medium text-gray-800 mb-0.5 text-xs">{component.name}</div>
-                                      <div className="text-gray-600 text-xs">{component.description}</div>
+                                    <div key={index} className="text-xs bg-gray-50 p-2 rounded border">
+                                      <div className="font-medium text-gray-800 mb-1">{component.name}</div>
+                                      <div className="text-gray-600">{component.description}</div>
                                     </div>
                                   );
                                 });
@@ -285,9 +218,9 @@ const AppBuilder = () => {
                           </div>
                         ) : (
                           <div className="flex-1 flex items-center justify-center">
-                            <div className="text-center text-gray-500 p-3">
-                              <div className="text-xs font-medium">{appContent.title}</div>
-                              <div className="text-xs mt-0.5">{appContent.subtitle}</div>
+                            <div className="text-center text-gray-500 p-4">
+                              <div className="text-sm font-medium">{appContent.title}</div>
+                              <div className="text-xs mt-1">{appContent.subtitle}</div>
                             </div>
                           </div>
                         )}
@@ -350,7 +283,7 @@ const AppBuilder = () => {
               </form>
             </div>
           </div>
-          <SheetContent side="left" className="p-0 w-64 border-none shadow-none bg-background">
+          <SheetContent side="left" className="p-0 w-64">
             <BuilderSidebar promptCount={promptCount} />
           </SheetContent>
         </Sheet>
@@ -445,11 +378,6 @@ const AppBuilder = () => {
           <div className="h-screen flex flex-col">
             <div className="p-4 border-b border-border bg-background flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <img 
-                  src="/lovable-uploads/e2ab9d49-b3b4-4c1d-adf6-3fe5b2fe284d.png" 
-                  alt="Builder Icon" 
-                  className="w-6 h-6 rounded-full"
-                />
                 <img 
                   src="/lovable-uploads/f3a0d0db-666c-4a34-b0dd-247f2d32948e.png" 
                   alt="App Preview" 

@@ -25,9 +25,8 @@ const HeroSection = () => {
     { text: "To-do list" },
   ];
 
-  const handleExampleClick = async (text: string) => {
-    // Navigate to builder page and auto-generate the app
-    navigate(`/builder?prompt=${encodeURIComponent(text)}&autoGenerate=true`);
+  const handleExampleClick = (text: string) => {
+    navigate(`/builder?prompt=${encodeURIComponent(text)}`);
   };
 
   return (
