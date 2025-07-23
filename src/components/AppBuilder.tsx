@@ -849,10 +849,50 @@ const AppBuilder = () => {
       )}
       
       {/* Modals */}
-      <PreviewDeviceModal 
-        isOpen={isPreviewModalOpen} 
-        onOpenChange={setIsPreviewModalOpen} 
-      />
+        <PreviewDeviceModal 
+          isOpen={isPreviewModalOpen} 
+          onOpenChange={setIsPreviewModalOpen} 
+        />
+        
+        <AccountModal 
+          isOpen={isAccountModalOpen} 
+          onOpenChange={setIsAccountModalOpen} 
+        />
+        
+        {/* Add API Modal */}
+        <Dialog open={isApiModalOpen} onOpenChange={setIsApiModalOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Add API Key for {selectedIntegration}</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="api-key">API Key</Label>
+                <Input id="api-key" type="password" placeholder="Enter your API key" />
+              </div>
+              
+              <div className="flex gap-2 pt-4">
+                <Button 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => setIsApiModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg"
+                  onClick={() => {
+                    setIsApiModalOpen(false);
+                    // Auto-save API key logic would go here
+                  }}
+                >
+                  Save & Connect
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       
       <AccountModal 
         isOpen={isAccountModalOpen} 
