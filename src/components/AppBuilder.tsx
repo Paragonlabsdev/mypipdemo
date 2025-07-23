@@ -19,11 +19,13 @@ const AppBuilder = () => {
     subtitle: "In just a moment, you'll see your app begin to take shape."
   });
   const [showCodeView, setShowCodeView] = useState(false);
+  const [promptCount, setPromptCount] = useState(0);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (inputValue.trim()) {
       setIsGenerating(true);
+      setPromptCount(prev => prev + 1);
       // Simulate app generation
       setTimeout(() => {
         setAppContent({
@@ -121,7 +123,7 @@ const AppBuilder = () => {
                   <div className="w-4 h-4 rounded-full border border-muted-foreground/30 flex items-center justify-center">
                     <div className="w-2 h-2 rounded-full bg-muted-foreground/50"></div>
                   </div>
-                  <span>293/350 left</span>
+                  <span>{promptCount}/5 left</span>
                 </div>
               </div>
             </form>
@@ -285,9 +287,9 @@ const AppBuilder = () => {
                           <div className="w-1 h-1 bg-black rounded-full"></div>
                           <div className="w-1 h-1 bg-black/40 rounded-full"></div>
                         </div>
-                        <div className="w-5 h-2.5 border border-black rounded-sm relative ml-1">
-                          <div className="w-3.5 h-1.5 bg-green-500 rounded-sm absolute right-0 top-0.5"></div>
-                          <div className="w-0.5 h-1 bg-black rounded-sm absolute -right-1 top-1"></div>
+                        <div className="w-6 h-3 border border-black rounded-sm relative ml-1">
+                          <div className="w-4.5 h-2 bg-green-500 rounded-sm absolute left-0.5 top-0.5"></div>
+                          <div className="w-0.5 h-1.5 bg-black rounded-sm absolute -right-1 top-0.75"></div>
                         </div>
                       </div>
                     </div>

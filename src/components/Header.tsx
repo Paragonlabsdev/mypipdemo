@@ -3,12 +3,14 @@ import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Link } from "react-router-dom";
 
+
 const Header = () => {
   const { theme, setTheme } = useTheme();
 
   return (
     <header className="w-full px-6 py-4 flex items-center justify-between">
-      <Link to="/" className="text-xl font-semibold text-foreground">
+      <Link to="/" className="text-xl font-semibold text-foreground flex items-center gap-2">
+        <img src="/lovable-uploads/14b0fd0b-04a2-4d8d-9fef-e552c8838e85.png" alt="MyPip Logo" className="w-8 h-8" />
         MyPip
       </Link>
       

@@ -4,6 +4,7 @@ import { ArrowUp, Send } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+
 const HeroSection = () => {
   const [inputValue, setInputValue] = useState("");
   const navigate = useNavigate();
@@ -16,10 +17,10 @@ const HeroSection = () => {
   };
 
   const exampleApps = [
-    { icon: "🐦", text: "Flappy bird game" },
-    { icon: "🍎", text: "Calorie tracking App" },
-    { icon: "📸", text: "Instagram style app" },
-    { icon: "✅", text: "To-do list" },
+    { text: "Flappy bird game" },
+    { text: "Calorie tracking App" },
+    { text: "Instagram style app" },
+    { text: "To-do list" },
   ];
 
   const handleExampleClick = (text: string) => {
@@ -29,12 +30,15 @@ const HeroSection = () => {
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
       <div className="max-w-4xl mx-auto text-center space-y-8">
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-foreground">
-          from idea to app{" "}
-          <span className="font-cursive bg-gradient-to-r from-accent via-purple-500 to-pink-500 bg-clip-text text-transparent animate-gradient">
-            instantly
-          </span>
-        </h1>
+        <div className="flex flex-col items-center space-y-6">
+          <img src="/lovable-uploads/14b0fd0b-04a2-4d8d-9fef-e552c8838e85.png" alt="MyPip Logo" className="w-24 h-24" />
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-normal text-foreground">
+            From idea to app{" "}
+            <span className="font-cursive bg-gradient-to-r from-accent via-purple-500 to-pink-500 bg-clip-text text-transparent animate-gradient">
+              instantly
+            </span>
+          </h1>
+        </div>
 
         <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
           <div className="relative">
@@ -66,13 +70,12 @@ const HeroSection = () => {
               key={index}
               variant="pill"
               onClick={() => handleExampleClick(app.text)}
-              className="flex items-center gap-2"
+              className="bg-muted hover:bg-muted/80 text-foreground"
             >
-              <span>{app.icon}</span>
               {app.text}
             </Button>
           ))}
-          <Button variant="pill" className="flex items-center gap-2">
+          <Button variant="pill" className="bg-muted hover:bg-muted/80 text-foreground flex items-center gap-2">
             <span>...</span>
             More
           </Button>
