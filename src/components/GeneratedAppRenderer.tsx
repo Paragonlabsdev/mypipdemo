@@ -18,6 +18,8 @@ const GeneratedAppRenderer: React.FC<GeneratedAppRendererProps> = ({
     // Create a component map from the generated code
     const componentMap: Record<string, React.ComponentType> = {};
     
+    if (!app?.components) return componentMap;
+    
     Object.entries(app.components).forEach(([name, code]: [string, any]) => {
       try {
         // Create a functional component based on the generated code
@@ -104,10 +106,20 @@ const GeneratedAppRenderer: React.FC<GeneratedAppRendererProps> = ({
     return componentMap;
   }, [app.components]);
 
+  // Add null checks for app structure
+  if (!app || !app.pages || !Array.isArray(app.pages)) {
+    return <div>No app data available</div>;
+  }
+
   const currentPageData = app.pages.find((p: any) => p.name === currentPage);
   
   if (!currentPageData) {
     return <div>Page not found</div>;
+  }
+
+  // Add null check for components array
+  if (!currentPageData.components || !Array.isArray(currentPageData.components)) {
+    return <div>No components found for this page</div>;
   }
 
   return (
