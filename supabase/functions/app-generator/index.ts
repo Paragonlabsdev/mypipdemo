@@ -36,15 +36,17 @@ serve(async (req) => {
 
 Requirements:
 - Create a full HTML page with inline CSS and JavaScript
-- Make it look like a professional mobile app
-- Use modern, clean design with proper spacing and colors
-- Include all necessary functionality
-- Make it responsive and touch-friendly
-- Use proper mobile viewport settings
-- Include interactive elements where appropriate
-- Return ONLY the HTML code, no explanations
+- Make it look like a professional mobile app with modern design
+- Use a mobile-first approach with proper viewport settings
+- Include CSS that works well in a 300px wide container
+- Use touch-friendly buttons and interface elements
+- Include all necessary functionality for the app
+- Make the design clean, modern, and user-friendly
+- Use proper color schemes and typography
+- Include interactive elements and smooth animations where appropriate
+- The HTML should be complete and ready to display in an iframe
 
-The HTML should be a complete, working app that can be displayed in an iframe.`
+Return ONLY the HTML code, no explanations or markdown formatting.`
           }
         ],
       }),
