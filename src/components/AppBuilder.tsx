@@ -37,7 +37,7 @@ const AppBuilder = () => {
         const { data: app, error: createError } = await supabase
           .from('apps')
           .insert({
-            user_id: 'anonymous', // For demo purposes
+            user_id: crypto.randomUUID(), // Generate a proper UUID
             name: 'New App',
             description: inputValue,
             prompt: inputValue,
