@@ -62,7 +62,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4.1-2025-04-14',
         messages: [
           {
             role: 'system',
@@ -105,7 +105,11 @@ Focus on mobile-first design patterns and native mobile experiences.`
     });
 
     const plannerData = await plannerResponse.json();
-    const plannerOutput = JSON.parse(plannerData.choices[0].message.content);
+    
+    // Extract JSON from OpenAI response (handle markdown code blocks)
+    let plannerContent = plannerData.choices[0].message.content;
+    const jsonMatch = plannerContent.match(/\{[\s\S]*\}/);
+    const plannerOutput = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(plannerContent);
     console.log('✅ Planner Agent completed:', plannerOutput);
 
     // === AGENT 2: UI COMPOSER AGENT (ChatGPT-4) ===
@@ -117,7 +121,7 @@ Focus on mobile-first design patterns and native mobile experiences.`
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4.1-2025-04-14',
         messages: [
           {
             role: 'system',
@@ -160,7 +164,11 @@ Focus on mobile UX patterns like tabs, modals, gestures, and touch-friendly inte
     });
 
     const uiComposerData = await uiComposerResponse.json();
-    const uiComposerOutput = JSON.parse(uiComposerData.choices[0].message.content);
+    
+    // Extract JSON from OpenAI response (handle markdown code blocks)
+    let uiComposerContent = uiComposerData.choices[0].message.content;
+    const uiJsonMatch = uiComposerContent.match(/\{[\s\S]*\}/);
+    const uiComposerOutput = uiJsonMatch ? JSON.parse(uiJsonMatch[0]) : JSON.parse(uiComposerContent);
     console.log('✅ UI Composer Agent completed:', uiComposerOutput);
 
     // === AGENT 3: CODE GENERATOR AGENT (Claude SDK) ===
