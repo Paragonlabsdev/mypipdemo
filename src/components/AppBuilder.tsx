@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams, Outlet, useLocation } from "react-router-dom";
 import { Send, Smartphone, RefreshCw, Paperclip, Share, Monitor, Puzzle, Code2, FileText, Folder, FolderOpen, Menu } from "lucide-react";
 import { BuilderSidebar } from "@/components/BuilderSidebar";
@@ -28,6 +28,64 @@ const AppBuilder = () => {
   const [chatHistory, setChatHistory] = useState<Array<{type: 'user' | 'assistant', content: string}>>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
+
+  // Auto-generate app when initial prompt is provided
+  useEffect(() => {
+    if (initialPrompt && !isGenerating && promptCount === 0) {
+      const generateFromInitialPrompt = async () => {
+        setIsGenerating(true);
+        setPromptCount(1);
+        
+        // Add initial prompt to chat history
+        setChatHistory([{ type: 'user', content: initialPrompt }]);
+
+        try {
+          // Call the AI app generator
+          const { data, error } = await supabase.functions.invoke('generate-app', {
+            body: { prompt: initialPrompt }
+          });
+
+          if (error) {
+            console.error('Error generating app:', error);
+            setChatHistory(prev => [...prev, { 
+              type: 'assistant', 
+              content: `Error generating app: ${error.message}` 
+            }]);
+            setAppContent({
+              title: "Generation failed",
+              subtitle: "Please try again with a different prompt."
+            });
+          } else {
+            // Successfully generated app
+            setGeneratedApp(data);
+            setCurrentPage(data.pages[0]?.name || "Home");
+            setChatHistory(prev => [...prev, { 
+              type: 'assistant', 
+              content: `✅ Generated your ${initialPrompt} app! It includes ${data.pages.length} pages: ${data.pages.map(p => p.name).join(', ')}. ${data.summary}` 
+            }]);
+            setAppContent({
+              title: data.pages[0]?.name || "Your App",
+              subtitle: data.summary || "App generated successfully!"
+            });
+          }
+        } catch (err) {
+          console.error('Failed to generate app:', err);
+          setChatHistory(prev => [...prev, { 
+            type: 'assistant', 
+            content: "Failed to generate app. Please check your connection and try again." 
+          }]);
+          setAppContent({
+            title: "Connection failed",
+            subtitle: "Please check your connection and try again."
+          });
+        }
+
+        setIsGenerating(false);
+      };
+
+      generateFromInitialPrompt();
+    }
+  }, [initialPrompt]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
