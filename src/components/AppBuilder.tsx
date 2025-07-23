@@ -6,6 +6,7 @@ import { useSearchParams, Outlet, useLocation } from "react-router-dom";
 import { Send, Smartphone, RefreshCw, Paperclip, Share, Monitor, Puzzle, Code2, FileText, Folder, FolderOpen } from "lucide-react";
 import { BuilderSidebar } from "@/components/BuilderSidebar";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import { supabase } from "@/integrations/supabase/client";
 
 const AppBuilder = () => {
   const [searchParams] = useSearchParams();
@@ -20,21 +21,63 @@ const AppBuilder = () => {
   });
   const [showCodeView, setShowCodeView] = useState(false);
   const [promptCount, setPromptCount] = useState(0);
+  const [generatedApp, setGeneratedApp] = useState<any>(null);
+  const [currentPage, setCurrentPage] = useState("Home");
+  const [chatHistory, setChatHistory] = useState<Array<{type: 'user' | 'assistant', content: string}>>([]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (inputValue.trim()) {
       setIsGenerating(true);
       setPromptCount(prev => prev + 1);
-      // Simulate app generation
-      setTimeout(() => {
-        setAppContent({
-          title: "App Generated!",
-          subtitle: `Your ${inputValue} app is ready to use.`
+      
+      // Add user message to chat
+      const userMessage = inputValue;
+      setChatHistory(prev => [...prev, { type: 'user', content: userMessage }]);
+      setInputValue("");
+
+      try {
+        // Call the AI app generator
+        const { data, error } = await supabase.functions.invoke('generate-app', {
+          body: { prompt: userMessage }
         });
-        setIsGenerating(false);
-        setInputValue("");
-      }, 2000);
+
+        if (error) {
+          console.error('Error generating app:', error);
+          setChatHistory(prev => [...prev, { 
+            type: 'assistant', 
+            content: `Error generating app: ${error.message}` 
+          }]);
+          setAppContent({
+            title: "Generation failed",
+            subtitle: "Please try again with a different prompt."
+          });
+        } else {
+          // Successfully generated app
+          setGeneratedApp(data);
+          setCurrentPage(data.pages[0]?.name || "Home");
+          setChatHistory(prev => [...prev, { 
+            type: 'assistant', 
+            content: `✅ Generated your ${userMessage} app! It includes ${data.pages.length} pages: ${data.pages.map(p => p.name).join(', ')}. ${data.summary}` 
+          }]);
+          setAppContent({
+            title: data.pages[0]?.name || "Your App",
+            subtitle: data.summary || "App generated successfully!"
+          });
+        }
+      } catch (err) {
+        console.error('Failed to generate app:', err);
+        setChatHistory(prev => [...prev, { 
+          type: 'assistant', 
+          content: "Failed to generate app. Please check your connection and try again." 
+        }]);
+        setAppContent({
+          title: "Connection failed",
+          subtitle: "Please check your connection and try again."
+        });
+      }
+
+      setIsGenerating(false);
     }
   };
 
@@ -75,9 +118,19 @@ const AppBuilder = () => {
                 </div>
               )}
               
+              {chatHistory.map((message, index) => (
+                <div key={index} className={`p-3 rounded-lg ${
+                  message.type === 'user' 
+                    ? 'bg-primary/10 text-primary ml-4' 
+                    : 'bg-muted text-muted-foreground mr-4'
+                }`}>
+                  <p className="text-sm">{message.content}</p>
+                </div>
+              ))}
+              
               {isGenerating && (
-                <div className="bg-accent/10 p-3 rounded-lg">
-                  <p className="text-sm text-accent">Generating your app...</p>
+                <div className="bg-accent/10 p-3 rounded-lg mr-4">
+                  <p className="text-sm text-accent">🤖 Generating your app...</p>
                 </div>
               )}
             </div>
@@ -259,13 +312,32 @@ const AppBuilder = () => {
                     
                     {/* Code Content */}
                     <div className="flex-1 p-4">
-                      <div className="h-full bg-muted/10 rounded border border-dashed border-muted-foreground/30 flex items-center justify-center">
-                        <div className="text-center text-muted-foreground">
-                          <Code2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                          <p className="text-lg">No app generated yet</p>
-                          <p className="text-sm">Start building to see your code here</p>
+                      {generatedApp ? (
+                        <div className="h-full bg-black text-green-400 p-4 rounded font-mono text-xs overflow-auto">
+                          <div className="mb-4">
+                            <div className="text-yellow-400 mb-2">-- Generated Database Schema</div>
+                            <pre className="whitespace-pre-wrap">{generatedApp.schema_sql}</pre>
+                          </div>
+                          <div className="mt-6">
+                            <div className="text-yellow-400 mb-2">-- App Structure</div>
+                            <pre className="whitespace-pre-wrap text-blue-300">
+{JSON.stringify({
+  pages: generatedApp.pages,
+  components: generatedApp.components,
+  api_endpoints: generatedApp.api_endpoints
+}, null, 2)}
+                            </pre>
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        <div className="h-full bg-muted/10 rounded border border-dashed border-muted-foreground/30 flex items-center justify-center">
+                          <div className="text-center text-muted-foreground">
+                            <Code2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                            <p className="text-lg">No app generated yet</p>
+                            <p className="text-sm">Start building to see your code here</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -295,14 +367,105 @@ const AppBuilder = () => {
                     </div>
 
                     {/* App Content Area */}
-                    <div className="absolute top-12 left-0 right-0 bottom-6 flex flex-col items-center justify-center text-center space-y-3 px-4">
-                      <Smartphone className="h-10 w-10 text-gray-400" />
-                      <h3 className="text-base font-semibold text-black">{appContent.title}</h3>
-                      <p className="text-xs text-gray-500 px-2">
-                        {appContent.subtitle}
-                      </p>
-                      {isGenerating && (
-                        <div className="w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="absolute top-12 left-0 right-0 bottom-12 flex flex-col overflow-hidden">
+                      {generatedApp ? (
+                        <>
+                          {/* Page Content */}
+                          <div className="flex-1 p-4 overflow-y-auto">
+                            <div className="space-y-3">
+                              {(() => {
+                                const currentPageData = generatedApp.pages.find(p => p.name === currentPage);
+                                if (!currentPageData) return null;
+                                
+                                return currentPageData.components.map((componentName: string, index: number) => {
+                                  const component = generatedApp.components[componentName];
+                                  if (!component) return null;
+                                  
+                                  switch (component.type) {
+                                    case 'card':
+                                      return (
+                                        <div key={index} className="bg-gray-50 p-3 rounded-lg border">
+                                          <h4 className="font-medium text-sm text-black mb-1">
+                                            {component.props?.title || componentName}
+                                          </h4>
+                                          <p className="text-xs text-gray-600">
+                                            {component.props?.description || "Card component"}
+                                          </p>
+                                        </div>
+                                      );
+                                    case 'form':
+                                      return (
+                                        <div key={index} className="bg-white p-3 rounded-lg border shadow-sm">
+                                          <h4 className="font-medium text-sm text-black mb-2">{componentName}</h4>
+                                          {component.fields?.map((field: string, i: number) => (
+                                            <div key={i} className="mb-2">
+                                              <label className="text-xs text-gray-600 capitalize">{field}</label>
+                                              <div className="bg-gray-100 h-6 rounded border mt-1"></div>
+                                            </div>
+                                          ))}
+                                          <div className="bg-blue-500 text-white text-xs py-1 px-2 rounded text-center mt-2">
+                                            {component.props?.submitText || "Submit"}
+                                          </div>
+                                        </div>
+                                      );
+                                    case 'list':
+                                      return (
+                                        <div key={index} className="bg-white rounded-lg border">
+                                          <h4 className="font-medium text-sm text-black p-3 border-b">{componentName}</h4>
+                                          {[1,2,3].map(item => (
+                                            <div key={item} className="p-3 border-b last:border-b-0">
+                                              <div className="text-xs text-gray-800">Sample Item {item}</div>
+                                              <div className="text-xs text-gray-500">Sample description</div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      );
+                                    case 'button':
+                                      return (
+                                        <div key={index} className="bg-blue-500 text-white text-xs py-2 px-3 rounded text-center">
+                                          {component.props?.text || componentName}
+                                        </div>
+                                      );
+                                    default:
+                                      return (
+                                        <div key={index} className="bg-gray-100 p-2 rounded text-xs text-gray-600">
+                                          {componentName} ({component.type})
+                                        </div>
+                                      );
+                                  }
+                                });
+                              })()}
+                            </div>
+                          </div>
+                          
+                          {/* Page Navigation */}
+                          <div className="border-t bg-gray-50 p-2">
+                            <div className="flex justify-center gap-1">
+                              {generatedApp.pages.map((page: any) => (
+                                <button
+                                  key={page.name}
+                                  onClick={() => setCurrentPage(page.name)}
+                                  className={`px-2 py-1 text-xs rounded transition-colors ${
+                                    currentPage === page.name
+                                      ? 'bg-blue-500 text-white'
+                                      : 'text-gray-600 hover:bg-gray-200'
+                                  }`}
+                                >
+                                  {page.name}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex-1 flex flex-col items-center justify-center text-center space-y-3 px-4">
+                          <Smartphone className="h-10 w-10 text-gray-400" />
+                          <h3 className="text-base font-semibold text-black">{appContent.title}</h3>
+                          <p className="text-xs text-gray-500 px-2">{appContent.subtitle}</p>
+                          {isGenerating && (
+                            <div className="w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                          )}
+                        </div>
                       )}
                     </div>
 
