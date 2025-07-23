@@ -6,7 +6,6 @@ import { useSearchParams, Outlet, useLocation } from "react-router-dom";
 import { Send, Smartphone, RefreshCw, Paperclip, Share, Monitor, Puzzle, Code2, FileText, Folder, FolderOpen } from "lucide-react";
 import { BuilderSidebar } from "@/components/BuilderSidebar";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import { supabase } from "@/integrations/supabase/client";
 
 const AppBuilder = () => {
   const [searchParams] = useSearchParams();
@@ -17,56 +16,32 @@ const AppBuilder = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [appContent, setAppContent] = useState({
     title: "Your app starts here",
-    subtitle: "In just a moment, you'll see your app begin to take shape.",
-    html: null
+    subtitle: "In just a moment, you'll see your app begin to take shape."
   });
   const [showCodeView, setShowCodeView] = useState(false);
   const [promptCount, setPromptCount] = useState(0);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (inputValue.trim()) {
       setIsGenerating(true);
       setPromptCount(prev => prev + 1);
-      
-      try {
-        const { data, error } = await supabase.functions.invoke('app-generator', {
-          body: { prompt: inputValue }
-        });
-
-        if (error) {
-          console.error('Error generating app:', error);
-          setAppContent({
-            title: "Generation Failed",
-            subtitle: "Sorry, there was an error generating your app. Please try again.",
-            html: null
-          });
-        } else {
-          setAppContent({
-            title: "App Generated!",
-            subtitle: `Your ${inputValue} app is ready to use.`,
-            html: data.html
-          });
-        }
-      } catch (error) {
-        console.error('Error calling app generator:', error);
+      // Simulate app generation
+      setTimeout(() => {
         setAppContent({
-          title: "Generation Failed", 
-          subtitle: "Sorry, there was an error generating your app. Please try again.",
-          html: null
+          title: "App Generated!",
+          subtitle: `Your ${inputValue} app is ready to use.`
         });
-      }
-      
-      setIsGenerating(false);
-      setInputValue("");
+        setIsGenerating(false);
+        setInputValue("");
+      }, 2000);
     }
   };
 
   const handleReload = () => {
     setAppContent({
       title: "Your app starts here",
-      subtitle: "In just a moment, you'll see your app begin to take shape.",
-      html: null
+      subtitle: "In just a moment, you'll see your app begin to take shape."
     });
   };
 
@@ -320,23 +295,14 @@ const AppBuilder = () => {
                     </div>
 
                     {/* App Content Area */}
-                    <div className="absolute top-12 left-0 right-0 bottom-6 overflow-hidden">
-                      {appContent.html ? (
-                        <div 
-                          className="w-full h-full overflow-auto"
-                          dangerouslySetInnerHTML={{ __html: appContent.html }}
-                        />
-                      ) : (
-                        <div className="flex flex-col items-center justify-center text-center space-y-3 px-4 h-full">
-                          <Smartphone className="h-10 w-10 text-gray-400" />
-                          <h3 className="text-base font-semibold text-black">{appContent.title}</h3>
-                          <p className="text-xs text-gray-500 px-2">
-                            {appContent.subtitle}
-                          </p>
-                          {isGenerating && (
-                            <div className="w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                          )}
-                        </div>
+                    <div className="absolute top-12 left-0 right-0 bottom-6 flex flex-col items-center justify-center text-center space-y-3 px-4">
+                      <Smartphone className="h-10 w-10 text-gray-400" />
+                      <h3 className="text-base font-semibold text-black">{appContent.title}</h3>
+                      <p className="text-xs text-gray-500 px-2">
+                        {appContent.subtitle}
+                      </p>
+                      {isGenerating && (
+                        <div className="w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                       )}
                     </div>
 
