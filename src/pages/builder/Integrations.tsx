@@ -24,25 +24,33 @@ const Integrations = () => {
       name: "Supabase", 
       category: "Backend as a Service",
       description: "Open source Firebase alternative with real-time database, authentication, and storage",
-      logo: "https://avatars.githubusercontent.com/u/54469796?s=200&v=4",
+      logo: "https://supabase.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fsupabase-logo-icon.6ce0f8f2.png&w=64&q=75",
+      bgColor: "bg-gradient-to-br from-green-400 to-green-600",
+      iconColor: "text-white",
     },
     { 
       name: "Firebase", 
       category: "Backend as a Service", 
       description: "Google's comprehensive platform for building web and mobile applications",
-      logo: "https://www.gstatic.com/devrel-devsite/prod/v2210deb8920cd4a55bd580441aa58e7853afc04b39a9d9ac4198e1cd7fbe04ef7/firebase/images/touchicon-180.png",
+      logo: "https://firebase.google.com/static/images/brand-guidelines/logo-logomark.png",
+      bgColor: "bg-gradient-to-br from-yellow-400 to-orange-500",
+      iconColor: "text-white",
     },
     { 
       name: "n8n", 
       category: "Workflow Automation",
       description: "Powerful workflow automation tool for connecting apps and automating tasks",
-      logo: "https://avatars.githubusercontent.com/u/45487711?s=200&v=4",
+      logo: "https://docs.n8n.io/favicon.ico",
+      bgColor: "bg-gradient-to-br from-purple-500 to-purple-700",
+      iconColor: "text-white",
     },
     { 
       name: "GitHub", 
       category: "Version Control",
       description: "The world's leading software development platform with Git-based version control",
-      logo: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+      logo: "https://github.githubassets.com/favicons/favicon-dark.svg",
+      bgColor: "bg-gradient-to-br from-gray-700 to-gray-900",
+      iconColor: "text-white",
     },
   ];
 
@@ -74,13 +82,13 @@ const Integrations = () => {
         
         <div className={`grid grid-cols-1 ${isMobile ? 'gap-4' : 'md:grid-cols-2 lg:grid-cols-3 gap-6'}`}>
           {integrations.map((integration) => (
-            <Card key={integration.name} className={`${isMobile ? 'p-4' : 'p-6'} hover:shadow-lg transition-shadow`}>
+            <Card key={integration.name} className={`${isMobile ? 'p-4' : 'p-6'} hover:shadow-lg transition-shadow bg-white dark:bg-gray-800 rounded-2xl border shadow-sm`}>
               <div className="flex items-start gap-4 mb-4">
-                <div className="w-12 h-12 rounded-lg overflow-hidden bg-white flex items-center justify-center border">
+                <div className={`w-16 h-16 rounded-2xl ${integration.bgColor} flex items-center justify-center shadow-lg`}>
                   <img 
                     src={integration.logo} 
                     alt={`${integration.name} logo`}
-                    className="w-10 h-10 object-contain"
+                    className="w-8 h-8 object-contain filter brightness-0 invert"
                     onError={(e) => {
                       e.currentTarget.src = "/placeholder.svg";
                     }}
@@ -112,12 +120,9 @@ const Integrations = () => {
               
               <div className="flex items-center justify-between">
                 <Button
-                  variant="outline"
-                  size="sm"
                   onClick={() => handleAddApi(integration.name)}
-                  className="text-xs"
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl px-4 py-2 text-sm font-medium"
                 >
-                  <Plus className="h-3 w-3 mr-1" />
                   Add API
                 </Button>
                 <span className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
@@ -142,11 +147,6 @@ const Integrations = () => {
               <Input id="api-key" type="password" placeholder="Enter your API key" />
             </div>
             
-            <div>
-              <Label htmlFor="api-url">Base URL (Optional)</Label>
-              <Input id="api-url" placeholder="https://api.example.com" />
-            </div>
-            
             <div className="flex gap-2 pt-4">
               <Button 
                 variant="outline" 
@@ -156,7 +156,7 @@ const Integrations = () => {
                 Cancel
               </Button>
               <Button 
-                className="flex-1"
+                className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl"
                 onClick={() => {
                   setIsApiModalOpen(false);
                   // Auto-save API key logic would go here

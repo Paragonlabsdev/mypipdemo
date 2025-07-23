@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 const sidebarItems = [
-  { title: "App Builder", url: "/builder", icon: Zap },
   { title: "Integrations", url: "/builder/integrations", icon: Puzzle },
   { title: "MyPips", url: "/builder/mypips", icon: Layers },
   { title: "Pricing", url: "/builder/pricing", icon: DollarSign },
@@ -24,6 +23,7 @@ interface BuilderSidebarProps {
 export const BuilderSidebar = ({ promptCount }: BuilderSidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
+  const [showMyPips, setShowMyPips] = useState(false);
   const [projects] = useState([
     { id: 1, name: "Flappy Bird Game", lastModified: "2 hours ago" },
     { id: 2, name: "Calorie Tracker", lastModified: "1 day ago" },
@@ -45,14 +45,6 @@ export const BuilderSidebar = ({ promptCount }: BuilderSidebarProps) => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setIsNewProjectModalOpen(true)}
-            className="text-primary hover:bg-primary/10"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
             onClick={() => setIsCollapsed(!isCollapsed)}
           >
             {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
@@ -61,6 +53,35 @@ export const BuilderSidebar = ({ promptCount }: BuilderSidebarProps) => {
       </div>
       
       <nav className={cn("flex-1 p-4", isCollapsed && "flex flex-col items-center")}>
+        <div className={cn("mb-4", isCollapsed && "flex justify-center")}>
+          <Button
+            onClick={() => setIsNewProjectModalOpen(true)}
+            className={cn(
+              "bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 text-white shadow-lg",
+              isCollapsed ? "w-12 h-12 rounded-full p-0" : "w-full rounded-xl"
+            )}
+          >
+            <Plus className="h-5 w-5" />
+            {!isCollapsed && <span className="ml-2">New Project</span>}
+          </Button>
+        </div>
+
+        <div className={cn("mb-4", isCollapsed && "flex justify-center")}>
+          <NavLink
+            to="/builder"
+            className={cn(
+              "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors w-full",
+              isCollapsed && "justify-center w-10 h-10 p-0",
+              location.pathname === "/builder"
+                ? "bg-primary text-primary-foreground" 
+                : "hover:bg-muted text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Zap className="h-5 w-5 flex-shrink-0" />
+            {!isCollapsed && <span>App Builder</span>}
+          </NavLink>
+        </div>
+        
         <ul className={cn("space-y-2", isCollapsed && "flex flex-col items-center")}>
           {sidebarItems.map((item) => {
             const isActive = location.pathname === item.url;
@@ -69,23 +90,53 @@ export const BuilderSidebar = ({ promptCount }: BuilderSidebarProps) => {
             if (item.title === "MyPips" && !isCollapsed) {
               return (
                 <li key={item.title} className="w-full">
-                  <div className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg",
-                    "text-muted-foreground"
-                  )}>
+                  <button 
+                    onClick={() => setShowMyPips(!showMyPips)}
+                    className={cn(
+                      "flex items-center justify-between w-full gap-3 px-3 py-2 rounded-lg transition-colors",
+                      "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <item.icon className="h-5 w-5 flex-shrink-0" />
+                      <span>MyPips</span>
+                    </div>
+                    <ChevronRight className={cn("h-4 w-4 transition-transform", showMyPips && "rotate-90")} />
+                  </button>
+                  {showMyPips && (
+                    <ul className="ml-8 mt-2 space-y-1">
+                      {projects.map((project) => (
+                        <li key={project.id}>
+                          <button 
+                            onClick={() => {
+                              // Navigate to builder with project data
+                              window.location.href = "/builder";
+                            }}
+                            className="flex items-center gap-2 px-2 py-1 rounded text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors w-full text-left"
+                          >
+                            <FileText className="h-3 w-3" />
+                            <span className="truncate">{project.name}</span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              );
+            }
+            
+            if (item.title === "MyPips" && isCollapsed) {
+              return (
+                <li key={item.title}>
+                  <button
+                    onClick={() => setShowMyPips(!showMyPips)}
+                    className={cn(
+                      "flex items-center justify-center w-10 h-10 p-0 rounded-lg transition-colors",
+                      "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    )}
+                  >
                     <item.icon className="h-5 w-5 flex-shrink-0" />
-                    <span>MyPips</span>
-                  </div>
-                  <ul className="ml-8 mt-2 space-y-1">
-                    {projects.map((project) => (
-                      <li key={project.id}>
-                        <button className="flex items-center gap-2 px-2 py-1 rounded text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors w-full text-left">
-                          <FileText className="h-3 w-3" />
-                          <span className="truncate">{project.name}</span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
+                  </button>
                 </li>
               );
             }
@@ -134,11 +185,6 @@ export const BuilderSidebar = ({ promptCount }: BuilderSidebarProps) => {
               <Input id="project-name" placeholder="My Awesome App" />
             </div>
             
-            <div>
-              <Label htmlFor="project-description">Description (Optional)</Label>
-              <Input id="project-description" placeholder="Brief description of your app" />
-            </div>
-            
             <div className="flex gap-2 pt-4">
               <Button 
                 variant="outline" 
@@ -149,7 +195,10 @@ export const BuilderSidebar = ({ promptCount }: BuilderSidebarProps) => {
               </Button>
               <Button 
                 className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-2xl"
-                onClick={() => setIsNewProjectModalOpen(false)}
+                onClick={() => {
+                  setIsNewProjectModalOpen(false);
+                  window.location.href = "/builder";
+                }}
               >
                 Create Project
               </Button>

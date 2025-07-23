@@ -4,7 +4,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Copy, TrendingUp, DollarSign, Users, Calendar } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Copy, TrendingUp, DollarSign, Users, Calendar, Plus } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
 
@@ -56,93 +57,128 @@ const Affiliate = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className={`flex justify-between items-center ${isMobile ? 'p-4' : 'p-6'} border-b border-border`}>
-        <h1 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>Affiliate Program</h1>
-        {!isMobile && <ThemeToggle />}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Header */}
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Affiliate Dashboard</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Track your earnings and manage your affiliate program</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl">
+              <Plus className="h-4 w-4 mr-2" />
+              Invite Friends
+            </Button>
+            <ThemeToggle />
+          </div>
+        </div>
       </div>
-      
-      <div className={`${isMobile ? 'p-4' : 'p-6'} space-y-6`}>
-        {/* Stats Grid */}
-        <div className={`grid grid-cols-1 ${isMobile ? 'gap-4' : 'md:grid-cols-2 lg:grid-cols-4 gap-6'}`}>
-          {stats.map((stat, index) => (
-            <Card key={index} className={`${isMobile ? 'p-4' : 'p-6'}`}>
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <div className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'} mb-1`}>
-                    {stat.title}
-                  </div>
-                  <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                    {stat.subtitle}
-                  </p>
+
+      <div className="p-6 space-y-6">
+        {/* Top Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="bg-white dark:bg-gray-800 rounded-2xl p-6 border-0 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Earnings</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">$0.00</p>
+              </div>
+              <div className="relative w-12 h-12">
+                <svg className="w-12 h-12 transform -rotate-90" viewBox="0 0 48 48">
+                  <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-gray-200 dark:text-gray-700"/>
+                  <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="transparent" strokeDasharray={`${0 * 1.25} 125.6`} className="text-green-500 transition-all duration-300"/>
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-xs font-semibold text-gray-900 dark:text-white">0%</span>
                 </div>
-                <stat.icon className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'} text-muted-foreground`} />
               </div>
-              <div className="w-full bg-muted rounded-full h-2">
-                <div 
-                  className="bg-primary h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${stat.progress}%` }}
-                />
+            </div>
+          </Card>
+
+          <Card className="bg-white dark:bg-gray-800 rounded-2xl p-6 border-0 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Monthly Progress</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">$0</p>
               </div>
-            </Card>
-          ))}
+              <div className="relative w-12 h-12">
+                <svg className="w-12 h-12 transform -rotate-90" viewBox="0 0 48 48">
+                  <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-gray-200 dark:text-gray-700"/>
+                  <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="transparent" strokeDasharray={`${0 * 1.25} 125.6`} className="text-blue-500 transition-all duration-300"/>
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-xs font-semibold text-gray-900 dark:text-white">0%</span>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="bg-white dark:bg-gray-800 rounded-2xl p-6 border-0 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Referrals</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">0</p>
+              </div>
+              <Users className="h-8 w-8 text-purple-500" />
+            </div>
+          </Card>
+
+          <Card className="bg-white dark:bg-gray-800 rounded-2xl p-6 border-0 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Conversion Rate</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">0%</p>
+              </div>
+              <TrendingUp className="h-8 w-8 text-orange-500" />
+            </div>
+          </Card>
         </div>
 
-        {/* Main Content */}
-        <div className={`grid grid-cols-1 ${isMobile ? 'gap-6' : 'lg:grid-cols-3 gap-8'}`}>
-          {/* Left Panel - Earnings */}
-          <div className={`${isMobile ? '' : 'lg:col-span-2'} space-y-6`}>
-            <Card className={`${isMobile ? 'p-4' : 'p-6'}`}>
-              <h3 className={`font-semibold ${isMobile ? 'text-lg' : 'text-xl'} mb-4`}>Total Earnings</h3>
-              
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">This Month</span>
-                  <span className="font-semibold">$0.00</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Last Month</span>
-                  <span className="font-semibold">$0.00</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">All Time</span>
-                  <span className="font-semibold">$0.00</span>
-                </div>
+        {/* Main Dashboard Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Side - Charts and Analytics */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Earnings Chart */}
+            <Card className="bg-white dark:bg-gray-800 rounded-2xl p-6 border-0 shadow-sm">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Earnings Overview</h3>
+                <Button variant="outline" size="sm" className="rounded-xl">
+                  Last 30 days
+                </Button>
+              </div>
+              <div className="h-64 flex items-center justify-center bg-gray-50 dark:bg-gray-700 rounded-xl">
+                <p className="text-gray-500 dark:text-gray-400">No data available yet</p>
               </div>
             </Card>
 
-            <Card className={`${isMobile ? 'p-4' : 'p-6'}`}>
-              <h3 className={`font-semibold ${isMobile ? 'text-lg' : 'text-xl'} mb-4`}>Performance Overview</h3>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center">
-                  <div className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'} text-primary`}>0</div>
-                  <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>Clicks</p>
+            {/* Performance Metrics */}
+            <Card className="bg-white dark:bg-gray-800 rounded-2xl p-6 border-0 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Performance Metrics</h3>
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Clicks</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">0</p>
+                  <Progress value={0} className="mt-2 h-2" />
                 </div>
-                <div className="text-center">
-                  <div className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'} text-primary`}>0</div>
-                  <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>Conversions</p>
-                </div>
-                <div className="text-center">
-                  <div className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'} text-primary`}>0%</div>
-                  <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>Conversion Rate</p>
-                </div>
-                <div className="text-center">
-                  <div className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'} text-primary`}>$0.00</div>
-                  <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>Avg. Commission</p>
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Conversions</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">0</p>
+                  <Progress value={0} className="mt-2 h-2" />
                 </div>
               </div>
             </Card>
           </div>
 
-          {/* Right Panel - Link Creator */}
+          {/* Right Side - Affiliate Tools */}
           <div className="space-y-6">
-            <Card className={`${isMobile ? 'p-4' : 'p-6'}`}>
-              <h3 className={`font-semibold ${isMobile ? 'text-lg' : 'text-xl'} mb-4`}>Your Affiliate Link</h3>
+            {/* Affiliate Link Creator */}
+            <Card className="bg-white dark:bg-gray-800 rounded-2xl p-6 border-0 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Your Affiliate Link</h3>
               
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="custom-link" className="text-sm font-medium">
+                  <Label htmlFor="custom-link" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Custom Link ID
                   </Label>
                   <div className="flex gap-2 mt-1">
@@ -151,12 +187,12 @@ const Affiliate = () => {
                       value={customLink}
                       onChange={(e) => setCustomLink(e.target.value)}
                       placeholder="your-custom-id"
-                      className="flex-1"
+                      className="flex-1 rounded-xl"
                     />
                     <Button
                       variant="outline"
                       onClick={generateNewLink}
-                      className="px-3"
+                      className="px-3 rounded-xl"
                     >
                       Generate
                     </Button>
@@ -164,17 +200,18 @@ const Affiliate = () => {
                 </div>
                 
                 <div>
-                  <Label className="text-sm font-medium">Generated Link</Label>
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Generated Link</Label>
                   <div className="flex gap-2 mt-1">
                     <Input
                       value={affiliateLink}
                       readOnly
-                      className="flex-1 bg-muted"
+                      className="flex-1 bg-gray-50 dark:bg-gray-700 rounded-xl"
                     />
                     <Button
                       variant="outline"
                       size="icon"
                       onClick={copyToClipboard}
+                      className="rounded-xl"
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
@@ -183,33 +220,43 @@ const Affiliate = () => {
               </div>
             </Card>
 
-            <Card className={`${isMobile ? 'p-4' : 'p-6'}`}>
-              <h3 className={`font-semibold ${isMobile ? 'text-lg' : 'text-xl'} mb-4`}>Commission Structure</h3>
+            {/* Commission Structure */}
+            <Card className="bg-white dark:bg-gray-800 rounded-2xl p-6 border-0 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Commission Rates</h3>
               
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Basic Plan</span>
-                  <span className="font-semibold">30%</span>
+                  <span className="text-gray-600 dark:text-gray-400">Basic Plan</span>
+                  <span className="font-semibold text-green-600">30%</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Pro Plan</span>
-                  <span className="font-semibold">30%</span>
+                  <span className="text-gray-600 dark:text-gray-400">Pro Plan</span>
+                  <span className="font-semibold text-green-600">30%</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Enterprise Plan</span>
-                  <span className="font-semibold">30%</span>
+                  <span className="text-gray-600 dark:text-gray-400">Enterprise Plan</span>
+                  <span className="font-semibold text-green-600">30%</span>
                 </div>
               </div>
             </Card>
 
-            <Card className={`${isMobile ? 'p-4' : 'p-6'}`}>
-              <h3 className={`font-semibold ${isMobile ? 'text-lg' : 'text-xl'} mb-4`}>Getting Started</h3>
+            {/* Quick Actions */}
+            <Card className="bg-white dark:bg-gray-800 rounded-2xl p-6 border-0 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
               
-              <div className="space-y-3 text-sm text-muted-foreground">
-                <p>1. Share your affiliate link with your audience</p>
-                <p>2. Earn 30% commission on all successful referrals</p>
-                <p>3. Track your performance in real-time</p>
-                <p>4. Get paid monthly via PayPal or bank transfer</p>
+              <div className="space-y-3">
+                <Button variant="outline" className="w-full justify-start rounded-xl">
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copy Link
+                </Button>
+                <Button variant="outline" className="w-full justify-start rounded-xl">
+                  <Users className="h-4 w-4 mr-2" />
+                  View Referrals
+                </Button>
+                <Button variant="outline" className="w-full justify-start rounded-xl">
+                  <DollarSign className="h-4 w-4 mr-2" />
+                  Request Payout
+                </Button>
               </div>
             </Card>
           </div>
