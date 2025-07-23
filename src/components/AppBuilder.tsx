@@ -48,7 +48,7 @@ const AppBuilder = () => {
   if (!isBuilderRoot) {
     return (
       <div className="min-h-screen bg-hero-bg flex">
-        <BuilderSidebar />
+        <BuilderSidebar promptCount={promptCount} />
         <div className="flex-1">
           <Outlet />
         </div>
@@ -58,7 +58,7 @@ const AppBuilder = () => {
 
   return (
     <div className="h-screen bg-hero-bg flex">
-      <BuilderSidebar />
+      <BuilderSidebar promptCount={promptCount} />
       
       <PanelGroup direction="horizontal" className="flex-1">
         {/* Chat Panel */}

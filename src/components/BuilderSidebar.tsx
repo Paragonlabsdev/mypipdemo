@@ -3,6 +3,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { Settings, DollarSign, Puzzle, Layers, ChevronLeft, ChevronRight, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { AccountDisplay } from "@/components/AccountDisplay";
 
 const sidebarItems = [
   { title: "App Builder", url: "/builder", icon: Zap },
@@ -12,7 +13,11 @@ const sidebarItems = [
   { title: "Settings", url: "/builder/settings", icon: Settings },
 ];
 
-export const BuilderSidebar = () => {
+interface BuilderSidebarProps {
+  promptCount: number;
+}
+
+export const BuilderSidebar = ({ promptCount }: BuilderSidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const location = useLocation();
 
@@ -59,6 +64,8 @@ export const BuilderSidebar = () => {
           })}
         </ul>
       </nav>
+      
+      {!isCollapsed && <AccountDisplay promptCount={promptCount} />}
     </div>
   );
 };
