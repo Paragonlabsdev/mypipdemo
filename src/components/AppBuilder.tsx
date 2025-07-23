@@ -6,7 +6,8 @@ import { useSearchParams, Outlet, useLocation } from "react-router-dom";
 import { Send, Smartphone, RefreshCw, Paperclip, Share, Monitor, Puzzle, Code2, FileText, Folder, FolderOpen } from "lucide-react";
 import { BuilderSidebar } from "@/components/BuilderSidebar";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import AgenticAppBuilder from "@/components/AgenticAppBuilder";
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const AppBuilder = () => {
   const [searchParams] = useSearchParams();
@@ -21,21 +22,102 @@ const AppBuilder = () => {
   });
   const [showCodeView, setShowCodeView] = useState(false);
   const [promptCount, setPromptCount] = useState(0);
+  const [currentApp, setCurrentApp] = useState<any>(null);
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (inputValue.trim()) {
       setIsGenerating(true);
       setPromptCount(prev => prev + 1);
-      // Simulate app generation
-      setTimeout(() => {
+      
+      try {
+        // Create app entry
+        const { data: app, error: createError } = await supabase
+          .from('apps')
+          .insert({
+            user_id: 'anonymous', // For demo purposes
+            name: 'New App',
+            description: inputValue,
+            prompt: inputValue,
+            status: 'planning'
+          })
+          .select()
+          .single();
+
+        if (createError) throw createError;
+
+        setCurrentApp(app);
+        setAppContent({
+          title: "Planning your app...",
+          subtitle: "AI Planner is analyzing your requirements"
+        });
+
+        // Step 1: Planning
+        const planResponse = await supabase.functions.invoke('app-planner', {
+          body: { prompt: inputValue, appId: app.id }
+        });
+
+        if (planResponse.error) throw planResponse.error;
+
+        setAppContent({
+          title: "Designing UI...",
+          subtitle: "AI Designer is creating your app interface"
+        });
+
+        // Step 2: UI Design
+        const uiResponse = await supabase.functions.invoke('ui-composer', {
+          body: { appId: app.id }
+        });
+
+        if (uiResponse.error) throw uiResponse.error;
+
+        setAppContent({
+          title: "Generating code...",
+          subtitle: "AI Developer is writing your React Native code"
+        });
+
+        // Step 3: Code Generation
+        const codeResponse = await supabase.functions.invoke('code-generator', {
+          body: { appId: app.id }
+        });
+
+        if (codeResponse.error) throw codeResponse.error;
+
+        // Get final app data
+        const { data: finalApp } = await supabase
+          .from('apps')
+          .select('*')
+          .eq('id', app.id)
+          .single();
+
+        setCurrentApp(finalApp);
         setAppContent({
           title: "App Generated!",
-          subtitle: `Your ${inputValue} app is ready to use.`
+          subtitle: `Your ${inputValue} React Native app is ready to download.`
         });
+
+        toast({
+          title: "Success!",
+          description: "Your React Native app has been generated.",
+        });
+
+      } catch (error) {
+        console.error('Build error:', error);
+        setAppContent({
+          title: "Generation failed",
+          subtitle: "Please try again with a different prompt."
+        });
+        
+        toast({
+          title: "Error",
+          description: "Failed to generate app. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
         setIsGenerating(false);
         setInputValue("");
-      }, 2000);
+      }
     }
   };
 
@@ -170,7 +252,176 @@ const AppBuilder = () => {
               </div>
             </div>
 
-            <AgenticAppBuilder />
+            <div className="flex-1 flex items-center justify-center p-8 relative">
+              {!showCodeView && (
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={handleReload}
+                  className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 bg-background/80 hover:bg-background"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              )}
+              
+              {showCodeView ? (
+                /* Code View */
+                <div className="w-full h-full max-w-4xl bg-background rounded-lg border border-border overflow-hidden">
+                  <div className="h-full flex">
+                    {/* File Tree */}
+                    <div className="w-64 bg-muted/20 border-r border-border p-4">
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Folder className="h-4 w-4" />
+                          <span>.git</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <FolderOpen className="h-4 w-4" />
+                          <span>app</span>
+                        </div>
+                        <div className="ml-6 space-y-1">
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <FileText className="h-4 w-4" />
+                            <span>_layout.tsx</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <FileText className="h-4 w-4" />
+                            <span>index.tsx</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <FolderOpen className="h-4 w-4" />
+                          <span>assets</span>
+                        </div>
+                        <div className="ml-6 space-y-1">
+                          <div className="flex items-center gap-2">
+                            <FolderOpen className="h-4 w-4" />
+                            <span>fonts</span>
+                          </div>
+                          <div className="ml-6">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <FileText className="h-4 w-4" />
+                              <span>SpaceM...</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Folder className="h-4 w-4" />
+                            <span>images</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Folder className="h-4 w-4" />
+                          <span>convex</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <FileText className="h-4 w-4" />
+                          <span>.env.example</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <FileText className="h-4 w-4" />
+                          <span>.gitignore</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <FileText className="h-4 w-4" />
+                          <span>app.json</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <FileText className="h-4 w-4" />
+                          <span>metro.config.js</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <FileText className="h-4 w-4" />
+                          <span>package.json</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <FileText className="h-4 w-4" />
+                          <span>tsconfig.json</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Code Content */}
+                    <div className="flex-1 p-4">
+                      <div className="h-full bg-muted/10 rounded border border-dashed border-muted-foreground/30 flex items-center justify-center">
+                        <div className="text-center text-muted-foreground">
+                          {currentApp?.code_data ? (
+                            <div className="w-full h-full overflow-auto">
+                              <div className="text-left space-y-4">
+                                {Object.entries(currentApp.code_data.files || {}).map(([path, content]) => (
+                                  <details key={path} className="border rounded p-2">
+                                    <summary className="cursor-pointer font-mono text-sm text-primary">
+                                      {path}
+                                    </summary>
+                                    <pre className="mt-2 text-xs bg-background p-2 rounded border overflow-auto max-h-64">
+                                      {typeof content === 'string' ? content : JSON.stringify(content, null, 2)}
+                                    </pre>
+                                  </details>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <Code2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                              <p className="text-lg">No app generated yet</p>
+                              <p className="text-sm">Start building to see your code here</p>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* iPhone Frame - smaller size to fit viewport */
+                <div className="relative w-[300px] h-[650px] bg-black rounded-[50px] p-2 shadow-2xl">
+                  {/* iPhone Screen */}
+                  <div className="w-full h-full bg-white rounded-[40px] relative overflow-hidden">
+                    {/* Dynamic Island */}
+                    <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-24 h-5 bg-black rounded-full"></div>
+                    
+                    {/* Status Bar */}
+                    <div className="absolute top-[10px] left-0 right-0 flex justify-between items-center px-6 text-black text-xs font-medium">
+                      <span>9:41</span>
+                      <div className="flex items-center gap-1">
+                        <div className="flex gap-1">
+                          <div className="w-1 h-1 bg-black rounded-full"></div>
+                          <div className="w-1 h-1 bg-black rounded-full"></div>
+                          <div className="w-1 h-1 bg-black rounded-full"></div>
+                          <div className="w-1 h-1 bg-black/40 rounded-full"></div>
+                        </div>
+                        <div className="w-6 h-3 border border-black rounded-sm relative ml-1">
+                          <div className="w-4.5 h-2 bg-green-500 rounded-sm absolute left-0.5 top-0.5"></div>
+                          <div className="w-0.5 h-1.5 bg-black rounded-sm absolute -right-1 top-0.75"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* App Content Area */}
+                    <div className="absolute top-12 left-0 right-0 bottom-6 flex flex-col items-center justify-center text-center space-y-3 px-4">
+                      <Smartphone className="h-10 w-10 text-gray-400" />
+                      <h3 className="text-base font-semibold text-black">{appContent.title}</h3>
+                      <p className="text-xs text-gray-500 px-2">
+                        {appContent.subtitle}
+                      </p>
+                      {isGenerating && (
+                        <div className="w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                      )}
+                      {currentApp?.status === 'completed' && (
+                        <div className="mt-4 space-y-2">
+                          <div className="w-full h-2 bg-gray-200 rounded-full">
+                            <div className="w-full h-2 bg-green-500 rounded-full"></div>
+                          </div>
+                          <p className="text-xs text-green-600">React Native app ready!</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Home Indicator */}
+                    <div className="absolute bottom-1.5 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-black rounded-full"></div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </Panel>
       </PanelGroup>
