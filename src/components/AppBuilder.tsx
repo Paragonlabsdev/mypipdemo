@@ -61,7 +61,7 @@ const AppBuilder = () => {
         {/* Chat Panel */}
         <Panel defaultSize={25} minSize={20} maxSize={40}>
           <div className="h-screen bg-background border-r border-border flex flex-col">
-            <div className="p-4 pb-3 border-b border-border">
+            <div className="p-4 pb-3">
               <h2 className="text-lg font-semibold">Chat</h2>
             </div>
             
@@ -92,7 +92,7 @@ const AppBuilder = () => {
                   </Button>
                   <Input
                     type="text"
-                    placeholder="Ask Bloom..."
+                    placeholder="Ask myPip..."
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     className="border-0 bg-transparent pr-12 focus:ring-0 focus:outline-none placeholder:text-muted-foreground/60"
@@ -166,43 +166,45 @@ const AppBuilder = () => {
               >
                 <RefreshCw className="h-4 w-4" />
               </Button>
-              <Card className="w-80 h-[640px] bg-card border border-border rounded-[2.5rem] p-4 flex flex-col relative shadow-2xl overflow-hidden">
-                {/* iPhone-style notch */}
-                <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-36 h-7 bg-foreground rounded-b-2xl flex items-center justify-center">
-                  <div className="w-12 h-1 bg-background rounded-full opacity-50"></div>
-                </div>
-                
-                {/* Status bar */}
-                <div className="flex justify-between items-center pt-8 pb-2 px-4 text-xs text-muted-foreground">
-                  <span className="font-medium">9:41</span>
-                  <div className="flex items-center gap-1">
-                    <div className="flex gap-0.5">
-                      <div className="w-1 h-2 bg-muted-foreground rounded-full"></div>
-                      <div className="w-1 h-2 bg-muted-foreground rounded-full"></div>
-                      <div className="w-1 h-2 bg-muted-foreground rounded-full"></div>
-                      <div className="w-1 h-2 bg-muted-foreground/50 rounded-full"></div>
-                    </div>
-                    <div className="w-6 h-3 border border-muted-foreground rounded-sm relative ml-1">
-                      <div className="w-3 h-2 bg-muted-foreground rounded-sm absolute right-0 top-0"></div>
+              {/* iPhone Frame - matches the uploaded reference */}
+              <div className="relative w-[375px] h-[812px] bg-black rounded-[60px] p-2 shadow-2xl">
+                {/* iPhone Screen */}
+                <div className="w-full h-full bg-white rounded-[50px] relative overflow-hidden">
+                  {/* Dynamic Island */}
+                  <div className="absolute top-3 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-black rounded-full"></div>
+                  
+                  {/* Status Bar */}
+                  <div className="absolute top-[14px] left-0 right-0 flex justify-between items-center px-8 text-black text-sm font-medium">
+                    <span>9:41</span>
+                    <div className="flex items-center gap-1">
+                      <div className="flex gap-1">
+                        <div className="w-1 h-1 bg-black rounded-full"></div>
+                        <div className="w-1 h-1 bg-black rounded-full"></div>
+                        <div className="w-1 h-1 bg-black rounded-full"></div>
+                        <div className="w-1 h-1 bg-black/40 rounded-full"></div>
+                      </div>
+                      <div className="w-6 h-3 border border-black rounded-sm relative ml-1">
+                        <div className="w-4 h-2 bg-black rounded-sm absolute right-0 top-0.5"></div>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* App content */}
-                <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4 bg-background/50 rounded-3xl mx-2 mb-4 border border-border/50">
-                  <Smartphone className="h-12 w-12 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold">{appContent.title}</h3>
-                  <p className="text-sm text-muted-foreground px-4">
-                    {appContent.subtitle}
-                  </p>
-                  {isGenerating && (
-                    <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
-                  )}
-                </div>
+                  {/* App Content Area */}
+                  <div className="absolute top-16 left-0 right-0 bottom-8 flex flex-col items-center justify-center text-center space-y-4 px-6">
+                    <Smartphone className="h-12 w-12 text-gray-400" />
+                    <h3 className="text-lg font-semibold text-black">{appContent.title}</h3>
+                    <p className="text-sm text-gray-500 px-4">
+                      {appContent.subtitle}
+                    </p>
+                    {isGenerating && (
+                      <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    )}
+                  </div>
 
-                {/* Home indicator */}
-                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1.5 bg-foreground/80 rounded-full"></div>
-              </Card>
+                  {/* Home Indicator */}
+                  <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-black rounded-full"></div>
+                </div>
+              </div>
             </div>
           </div>
         </Panel>
