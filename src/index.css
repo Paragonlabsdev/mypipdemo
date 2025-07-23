@@ -115,3 +115,18 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .pulse-logo {
+    animation: pulse-breathe 3s ease-in-out infinite;
+  }
+  
+  @keyframes pulse-breathe {
+    0%, 100% {
+      transform: scale(0.85);
+    }
+    50% {
+      transform: scale(1);
+    }
+  }
+}

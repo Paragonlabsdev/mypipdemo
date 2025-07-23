@@ -36,7 +36,7 @@ const HeroSection = () => {
           <img 
             src="/lovable-uploads/14b0fd0b-04a2-4d8d-9fef-e552c8838e85.png" 
             alt="MyPip Logo" 
-            className={`${isMobile ? 'w-16 h-16' : 'w-24 h-24'}`} 
+            className={`${isMobile ? 'w-16 h-16' : 'w-24 h-24'} pulse-logo`} 
           />
           <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl md:text-4xl lg:text-5xl'} font-normal text-foreground`}>
             From idea to app{" "}
@@ -58,10 +58,10 @@ const HeroSection = () => {
             <Button
               type="submit"
               size="icon"
-              className={`absolute ${isMobile ? 'right-1 top-1 h-10 w-10' : 'right-2 top-2 h-10 w-10'} rounded-xl bg-muted hover:bg-muted/80`}
+              className={`absolute ${isMobile ? 'right-1 top-1 h-10 w-10' : 'right-2 top-2 h-10 w-10'} rounded-xl bg-foreground hover:bg-foreground/90`}
               disabled={!inputValue.trim()}
             >
-              <Send className="h-4 w-4" />
+              <Send className="h-4 w-4 text-background" />
             </Button>
           </div>
         </form>

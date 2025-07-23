@@ -3,6 +3,7 @@ import { User } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { PricingModal } from "./PricingModal";
 
 interface AccountDisplayProps {
   promptCount: number;
@@ -11,6 +12,7 @@ interface AccountDisplayProps {
 export const AccountDisplay = ({ promptCount }: AccountDisplayProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("account");
+  const [isPricingOpen, setIsPricingOpen] = useState(false);
 
   return (
     <>
@@ -153,7 +155,10 @@ export const AccountDisplay = ({ promptCount }: AccountDisplayProps) => {
                           <h4 className="text-lg font-medium mb-1">Current Subscription</h4>
                           <p className="text-muted-foreground">You are currently on the Free plan.</p>
                         </div>
-                        <Button className="bg-foreground text-background hover:bg-foreground/90">
+                        <Button 
+                          onClick={() => setIsPricingOpen(true)}
+                          className="bg-foreground text-background hover:bg-foreground/90"
+                        >
                           Upgrade
                         </Button>
                       </div>
@@ -165,6 +170,8 @@ export const AccountDisplay = ({ promptCount }: AccountDisplayProps) => {
           </div>
         </DialogContent>
       </Dialog>
+      
+      <PricingModal isOpen={isPricingOpen} onOpenChange={setIsPricingOpen} />
     </>
   );
 };

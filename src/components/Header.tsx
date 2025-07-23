@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, MessageCircle, BookOpen } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Link } from "react-router-dom";
 
@@ -15,6 +15,38 @@ const Header = () => {
       </Link>
       
       <div className="flex items-center gap-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          asChild
+          className="w-9 h-9"
+        >
+          <a 
+            href="https://discord.gg/wyqp2gqy" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            aria-label="Join Discord"
+          >
+            <MessageCircle className="h-4 w-4" />
+          </a>
+        </Button>
+        
+        <Button
+          variant="ghost"
+          size="icon"
+          asChild
+          className="w-9 h-9"
+        >
+          <a 
+            href="https://docs.lovable.dev/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            aria-label="Documentation"
+          >
+            <BookOpen className="h-4 w-4" />
+          </a>
+        </Button>
+        
         <Button
           variant="ghost"
           size="icon"

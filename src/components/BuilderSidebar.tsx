@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Settings, DollarSign, Puzzle, Layers, ChevronLeft, ChevronRight, Zap, User } from "lucide-react";
+import { Settings, DollarSign, Puzzle, Layers, ChevronLeft, ChevronRight, Zap, User, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AccountDisplay } from "@/components/AccountDisplay";
@@ -10,6 +10,7 @@ const sidebarItems = [
   { title: "Integrations", url: "/builder/integrations", icon: Puzzle },
   { title: "MyPips", url: "/builder/mypips", icon: Layers },
   { title: "Pricing", url: "/builder/pricing", icon: DollarSign },
+  { title: "Affiliate", url: "/builder/affiliate", icon: Users },
   { title: "Settings", url: "/builder/settings", icon: Settings },
 ];
 

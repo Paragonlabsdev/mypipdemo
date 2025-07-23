@@ -6,6 +6,7 @@ import Integrations from "./pages/builder/Integrations";
 import MyPips from "./pages/builder/MyPips";
 import Pricing from "./pages/builder/Pricing";
 import Settings from "./pages/builder/Settings";
+import Affiliate from "./pages/builder/Affiliate";
 
 const App = () => {
   return (
@@ -16,6 +17,7 @@ const App = () => {
           <Route path="integrations" element={<Integrations />} />
           <Route path="mypips" element={<MyPips />} />
           <Route path="pricing" element={<Pricing />} />
+          <Route path="affiliate" element={<Affiliate />} />
           <Route path="settings" element={<Settings />} />
         </Route>
         <Route path="*" element={<NotFound />} />

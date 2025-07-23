@@ -319,36 +319,38 @@ const AppBuilder = () => {
               </div>
 
               {/* Mobile Input */}
-              <form onSubmit={handleSubmit} className="p-4 border-t border-border bg-background">
-                <div className="relative bg-muted/30 rounded-xl p-3">
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="text"
-                      placeholder="Ask myPip..."
-                      value={inputValue}
-                      onChange={(e) => setInputValue(e.target.value)}
-                      className="border-0 bg-transparent pr-12 focus:ring-0 focus:outline-none placeholder:text-muted-foreground/60"
-                      disabled={isGenerating}
-                    />
-                    <Button
-                      type="submit"
-                      size="icon"
-                      variant="ghost"
-                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                      disabled={!inputValue.trim() || isGenerating}
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
+              <div className="p-4 bg-background border-t-0 rounded-t-lg border border-border mx-4 mb-4">
+                <form onSubmit={handleSubmit}>
+                  <div className="relative bg-muted/30 rounded-xl p-3">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="text"
+                        placeholder="Ask myPip..."
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        className="border-0 bg-transparent pr-12 focus:ring-0 focus:outline-none placeholder:text-muted-foreground/60"
+                        disabled={isGenerating}
+                      />
+                      <Button
+                        type="submit"
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        disabled={!inputValue.trim() || isGenerating}
+                      >
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center justify-between mt-2 px-1">
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-400 to-purple-500"></div>
-                    <span>Smart</span>
+                  <div className="flex items-center justify-between mt-2 px-1">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-400 to-purple-500"></div>
+                      <span>Smart</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">{promptCount}/5 left</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">{promptCount}/5 left</span>
-                </div>
-              </form>
+                </form>
+              </div>
             </div>
           </div>
           <SheetContent side="left" className="p-0 w-64">
@@ -391,51 +393,50 @@ const AppBuilder = () => {
               )}
             </div>
 
-            <form onSubmit={handleSubmit} className="p-4 border-t border-border">
-              <div className="relative bg-muted/30 rounded-xl p-3">
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                  >
-                    <Paperclip className="h-4 w-4" />
-                  </Button>
-                  <Input
-                    type="text"
-                    placeholder="Ask myPip..."
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    className="border-0 bg-transparent pr-12 focus:ring-0 focus:outline-none placeholder:text-muted-foreground/60"
-                    disabled={isGenerating}
-                  />
-                  <Button
-                    type="submit"
-                    size="icon"
-                    variant="ghost"
-                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                    disabled={!inputValue.trim() || isGenerating}
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-              <div className="flex items-center justify-between mt-3 px-1">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-400 to-purple-500"></div>
-                    <span>Smart</span>
+            <div className="p-4 bg-background border-t-0 rounded-t-lg border border-border mx-4 mb-4">
+              <form onSubmit={handleSubmit}>
+                <div className="relative bg-muted/30 rounded-xl p-3">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                    >
+                      <Paperclip className="h-4 w-4" />
+                    </Button>
+                    <Input
+                      type="text"
+                      placeholder="Ask myPip..."
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      className="border-0 bg-transparent pr-12 focus:ring-0 focus:outline-none placeholder:text-muted-foreground/60"
+                      disabled={isGenerating}
+                    />
+                    <Button
+                      type="submit"
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 text-foreground hover:text-foreground/80"
+                      disabled={!inputValue.trim() || isGenerating}
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <div className="w-4 h-4 rounded-full border border-muted-foreground/30 flex items-center justify-center">
-                    <div className="w-2 h-2 rounded-full bg-muted-foreground/50"></div>
+                <div className="flex items-center justify-between mt-3 px-1">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-400 to-purple-500"></div>
+                      <span>Smart</span>
+                    </div>
                   </div>
-                  <span>{promptCount}/5 left</span>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span>{promptCount}/5 left</span>
+                  </div>
                 </div>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
         </Panel>
 

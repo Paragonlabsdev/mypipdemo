@@ -1,9 +1,14 @@
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const Pricing = () => {
+interface PricingModalProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export const PricingModal = ({ isOpen, onOpenChange }: PricingModalProps) => {
   const isMobile = useIsMobile();
   
   const plans = [
@@ -32,21 +37,16 @@ const Pricing = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className={`flex justify-between items-center ${isMobile ? 'p-4' : 'p-6'} border-b border-border`}>
-        <h1 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>Pricing</h1>
-        {!isMobile && <ThemeToggle />}
-      </div>
-      
-      <div className={`${isMobile ? 'p-4' : 'p-6'}`}>
-        <div className={`text-center ${isMobile ? 'mb-6' : 'mb-8'}`}>
-          <h2 className={`font-bold ${isMobile ? 'text-2xl mb-3' : 'text-3xl mb-4'}`}>Choose Your Plan</h2>
-          <p className={`text-muted-foreground ${isMobile ? 'text-sm' : ''}`}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-7xl max-h-[90vh] overflow-auto p-6 rounded-xl">
+        <DialogHeader className="mb-6">
+          <DialogTitle className="text-2xl font-bold text-center">Choose Your Plan</DialogTitle>
+          <p className="text-muted-foreground text-center">
             Select the perfect plan for your app building needs.
           </p>
-        </div>
+        </DialogHeader>
         
-        <div className={`grid grid-cols-1 ${isMobile ? 'gap-4' : 'md:grid-cols-3 gap-6'} max-w-6xl mx-auto`}>
+        <div className={`grid grid-cols-1 ${isMobile ? 'gap-4' : 'md:grid-cols-3 gap-6'}`}>
           {plans.map((plan) => (
             <div key={plan.name} className={`relative rounded-2xl ${isMobile ? 'p-6' : 'p-8'} ${
               plan.popular 
@@ -97,9 +97,7 @@ const Pricing = () => {
             </div>
           ))}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
-
-export default Pricing;
