@@ -13,7 +13,7 @@ const sidebarItems = [
 ];
 
 export const BuilderSidebar = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const location = useLocation();
 
   return (
@@ -21,7 +21,10 @@ export const BuilderSidebar = () => {
       "bg-background border-r border-border flex flex-col transition-all duration-300",
       isCollapsed ? "w-16" : "w-64"
     )}>
-      <div className="p-4 border-b border-border flex items-center justify-between">
+      <div className={cn(
+        "p-4 border-b border-border flex items-center",
+        isCollapsed ? "justify-center" : "justify-between"
+      )}>
         {!isCollapsed && <h2 className="text-lg font-semibold">Navigation</h2>}
         <Button
           variant="ghost"
@@ -32,8 +35,8 @@ export const BuilderSidebar = () => {
         </Button>
       </div>
       
-      <nav className="flex-1 p-4">
-        <ul className="space-y-2">
+      <nav className={cn("flex-1 p-4", isCollapsed && "flex flex-col items-center")}>
+        <ul className={cn("space-y-2", isCollapsed && "flex flex-col items-center")}>
           {sidebarItems.map((item) => {
             const isActive = location.pathname === item.url;
             return (
@@ -42,6 +45,7 @@ export const BuilderSidebar = () => {
                   to={item.url}
                   className={cn(
                     "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                    isCollapsed && "justify-center w-10 h-10 p-0",
                     isActive 
                       ? "bg-primary text-primary-foreground" 
                       : "hover:bg-muted text-muted-foreground hover:text-foreground"

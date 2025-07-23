@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useState } from "react";
 import { useSearchParams, Outlet, useLocation } from "react-router-dom";
-import { Send, Smartphone, RefreshCw } from "lucide-react";
+import { Send, Smartphone, RefreshCw, Paperclip, Share, Monitor, Puzzle } from "lucide-react";
 import { BuilderSidebar } from "@/components/BuilderSidebar";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
@@ -61,7 +61,7 @@ const AppBuilder = () => {
         {/* Chat Panel */}
         <Panel defaultSize={25} minSize={20} maxSize={40}>
           <div className="h-screen bg-background border-r border-border flex flex-col">
-            <div className="p-4 border-b border-border">
+            <div className="p-4 pb-3 border-b border-border">
               <h2 className="text-lg font-semibold">Chat</h2>
             </div>
             
@@ -80,34 +80,54 @@ const AppBuilder = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="p-4 border-t border-border">
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Ask mypip..."
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  className="pr-12"
-                  disabled={isGenerating}
-                />
-                <Button
-                  type="submit"
-                  size="icon"
-                  variant="ghost"
-                  className="absolute right-1 top-1 h-8 w-8"
-                  disabled={!inputValue.trim() || isGenerating}
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
+              <div className="relative bg-muted/30 rounded-xl p-3">
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                  >
+                    <Paperclip className="h-4 w-4" />
+                  </Button>
+                  <Input
+                    type="text"
+                    placeholder="Ask Bloom..."
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    className="border-0 bg-transparent pr-12 focus:ring-0 focus:outline-none placeholder:text-muted-foreground/60"
+                    disabled={isGenerating}
+                  />
+                  <Button
+                    type="submit"
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                    disabled={!inputValue.trim() || isGenerating}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
-                <span>Smart</span>
-                <span>274/350 left</span>
+              <div className="flex items-center justify-between mt-3 px-1">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-400 to-purple-500"></div>
+                    <span>Smart</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="w-4 h-4 rounded-full border border-muted-foreground/30 flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-muted-foreground/50"></div>
+                  </div>
+                  <span>293/350 left</span>
+                </div>
               </div>
             </form>
           </div>
         </Panel>
 
-        <PanelResizeHandle className="w-2 bg-border hover:bg-accent transition-colors" />
+        <PanelResizeHandle className="w-px bg-border hover:bg-accent transition-colors" />
 
         {/* Main Content - App Preview */}
         <Panel defaultSize={75} minSize={60}>
@@ -122,14 +142,30 @@ const AppBuilder = () => {
                 <span className="text-sm text-muted-foreground">App Preview</span>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" onClick={handleReload}>
-                  <RefreshCw className="h-4 w-4" />
+                <Button variant="ghost" size="sm" className="text-xs">
+                  <Puzzle className="h-4 w-4 mr-1" />
+                  Integrations
                 </Button>
-                <span className="text-sm text-muted-foreground">Reload</span>
+                <Button variant="ghost" size="sm" className="text-xs">
+                  <Share className="h-4 w-4 mr-1" />
+                  Share
+                </Button>
+                <Button variant="ghost" size="sm" className="text-xs">
+                  <Monitor className="h-4 w-4 mr-1" />
+                  Preview on device
+                </Button>
               </div>
             </div>
 
-            <div className="flex-1 flex items-end justify-center pb-16 pt-8">
+            <div className="flex-1 flex items-end justify-center pb-16 pt-8 relative">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handleReload}
+                className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 bg-background/80 hover:bg-background"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
               <Card className="w-80 h-[640px] bg-card border border-border rounded-[2.5rem] p-4 flex flex-col relative shadow-2xl overflow-hidden">
                 {/* iPhone-style notch */}
                 <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-36 h-7 bg-foreground rounded-b-2xl flex items-center justify-center">
