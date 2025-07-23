@@ -130,20 +130,30 @@ const AppBuilder = () => {
             </div>
 
             <div className="flex-1 flex items-end justify-center pb-16 pt-8">
-              <Card className="w-80 h-[600px] bg-background border-2 border-border rounded-[2.5rem] p-8 flex flex-col items-center justify-center relative shadow-2xl">
-                {/* Phone notch simulation */}
-                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-foreground rounded-full flex items-center justify-between px-2">
-                  <span className="text-xs text-background">9:41</span>
-                  <div className="w-16 h-4 bg-background rounded-full"></div>
-                  <div className="flex gap-1">
-                    <div className="w-1 h-1 bg-background rounded-full"></div>
-                    <div className="w-1 h-1 bg-background rounded-full"></div>
-                    <div className="w-1 h-1 bg-background rounded-full"></div>
+              <Card className="w-80 h-[640px] bg-card border border-border rounded-[2.5rem] p-4 flex flex-col relative shadow-2xl overflow-hidden">
+                {/* iPhone-style notch */}
+                <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-36 h-7 bg-foreground rounded-b-2xl flex items-center justify-center">
+                  <div className="w-12 h-1 bg-background rounded-full opacity-50"></div>
+                </div>
+                
+                {/* Status bar */}
+                <div className="flex justify-between items-center pt-8 pb-2 px-4 text-xs text-muted-foreground">
+                  <span className="font-medium">9:41</span>
+                  <div className="flex items-center gap-1">
+                    <div className="flex gap-0.5">
+                      <div className="w-1 h-2 bg-muted-foreground rounded-full"></div>
+                      <div className="w-1 h-2 bg-muted-foreground rounded-full"></div>
+                      <div className="w-1 h-2 bg-muted-foreground rounded-full"></div>
+                      <div className="w-1 h-2 bg-muted-foreground/50 rounded-full"></div>
+                    </div>
+                    <div className="w-6 h-3 border border-muted-foreground rounded-sm relative ml-1">
+                      <div className="w-3 h-2 bg-muted-foreground rounded-sm absolute right-0 top-0"></div>
+                    </div>
                   </div>
                 </div>
 
                 {/* App content */}
-                <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4 mt-8">
+                <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4 bg-background/50 rounded-3xl mx-2 mb-4 border border-border/50">
                   <Smartphone className="h-12 w-12 text-muted-foreground" />
                   <h3 className="text-lg font-semibold">{appContent.title}</h3>
                   <p className="text-sm text-muted-foreground px-4">
@@ -155,7 +165,7 @@ const AppBuilder = () => {
                 </div>
 
                 {/* Home indicator */}
-                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-foreground rounded-full"></div>
+                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1.5 bg-foreground/80 rounded-full"></div>
               </Card>
             </div>
           </div>

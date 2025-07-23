@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Settings, DollarSign, Puzzle, Layers, ChevronLeft, ChevronRight } from "lucide-react";
+import { Settings, DollarSign, Puzzle, Layers, ChevronLeft, ChevronRight, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const sidebarItems = [
+  { title: "App Builder", url: "/builder", icon: Zap },
   { title: "Integrations", url: "/builder/integrations", icon: Puzzle },
   { title: "MyPips", url: "/builder/mypips", icon: Layers },
   { title: "Pricing", url: "/builder/pricing", icon: DollarSign },

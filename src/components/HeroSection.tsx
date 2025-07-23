@@ -29,9 +29,9 @@ const HeroSection = () => {
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
       <div className="max-w-4xl mx-auto text-center space-y-8">
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-foreground">
           from idea to app{" "}
-          <span className="bg-gradient-to-r from-accent to-purple-500 bg-clip-text text-transparent">
+          <span className="font-cursive bg-gradient-to-r from-accent via-purple-500 to-pink-500 bg-clip-text text-transparent animate-gradient">
             instantly
           </span>
         </h1>

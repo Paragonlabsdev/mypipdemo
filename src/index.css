@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -62,7 +63,7 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 220 13% 8%;
+    --background: 220 13% 3%;
     --foreground: 210 40% 98%;
 
     --card: 222.2 84% 4.9%;
@@ -84,7 +85,7 @@ All colors MUST be HSL.
     --accent-foreground: 0 0% 100%;
 
     /* Dark mode custom tokens */
-    --hero-background: 222.2 84% 4.9%;
+    --hero-background: 220 13% 3%;
     --pill-background: 0 0% 15%;
     --pill-foreground: 0 0% 100%;
 
