@@ -3,10 +3,12 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useState } from "react";
 import { useSearchParams, Outlet, useLocation } from "react-router-dom";
-import { Send, Smartphone, RefreshCw, Paperclip, Share, Monitor, Puzzle, Code2, FileText, Folder, FolderOpen } from "lucide-react";
+import { Send, Smartphone, RefreshCw, Paperclip, Share, Monitor, Puzzle, Code2, FileText, Folder, FolderOpen, Menu } from "lucide-react";
 import { BuilderSidebar } from "@/components/BuilderSidebar";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { supabase } from "@/integrations/supabase/client";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const AppBuilder = () => {
   const [searchParams] = useSearchParams();
@@ -24,6 +26,8 @@ const AppBuilder = () => {
   const [generatedApp, setGeneratedApp] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState("Home");
   const [chatHistory, setChatHistory] = useState<Array<{type: 'user' | 'assistant', content: string}>>([]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,19 +95,203 @@ const AppBuilder = () => {
   if (!isBuilderRoot) {
     return (
       <div className="min-h-screen bg-hero-bg flex">
-        <BuilderSidebar promptCount={promptCount} />
-        <div className="flex-1">
-          <Outlet />
-        </div>
+        {isMobile ? (
+          <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+            <div className="flex-1">
+              <div className="p-4 bg-background border-b border-border">
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+              </div>
+              <Outlet />
+            </div>
+            <SheetContent side="left" className="p-0 w-64">
+              <BuilderSidebar promptCount={promptCount} />
+            </SheetContent>
+          </Sheet>
+        ) : (
+          <>
+            <BuilderSidebar promptCount={promptCount} />
+            <div className="flex-1">
+              <Outlet />
+            </div>
+          </>
+        )}
       </div>
     );
   }
 
   return (
     <div className="h-screen bg-hero-bg flex">
-      <BuilderSidebar promptCount={promptCount} />
-      
-      <PanelGroup direction="horizontal" className="flex-1">
+      {isMobile ? (
+        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+          <div className="flex-1 flex flex-col">
+            {/* Mobile Header */}
+            <div className="p-4 bg-background border-b border-border flex items-center justify-between">
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <span className="text-sm font-medium">myPip Builder</span>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-xs"
+                  onClick={() => setShowCodeView(!showCodeView)}
+                >
+                  <Code2 className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm" className="text-xs">
+                  <Share className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            
+            {/* Mobile Chat Section */}
+            <div className="flex-1 flex flex-col">
+              {/* Chat History */}
+              <div className="flex-1 p-4 space-y-4 overflow-y-auto bg-background">
+                {initialPrompt && (
+                  <div className="bg-muted p-3 rounded-lg">
+                    <p className="text-sm">{initialPrompt}</p>
+                  </div>
+                )}
+                
+                {chatHistory.map((message, index) => (
+                  <div key={index} className={`p-3 rounded-lg ${
+                    message.type === 'user' 
+                      ? 'bg-primary/10 text-primary ml-4' 
+                      : 'bg-muted text-muted-foreground mr-4'
+                  }`}>
+                    <p className="text-sm">{message.content}</p>
+                  </div>
+                ))}
+                
+                {isGenerating && (
+                  <div className="bg-accent/10 p-3 rounded-lg mr-4">
+                    <p className="text-sm text-accent">🤖 Generating your app...</p>
+                  </div>
+                )}
+              </div>
+
+              {/* App Preview */}
+              <div className="flex-1 flex items-center justify-center p-4 bg-hero-bg">
+                {!showCodeView ? (
+                  <div className="relative w-full max-w-[280px] h-[500px] bg-black rounded-[40px] p-2 shadow-2xl">
+                    <div className="w-full h-full bg-white rounded-[30px] relative overflow-hidden">
+                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-20 h-4 bg-black rounded-full"></div>
+                      
+                      <div className="absolute top-[10px] left-0 right-0 flex justify-between items-center px-4 text-black text-xs font-medium">
+                        <span>9:41</span>
+                        <div className="flex items-center gap-1">
+                          <div className="w-4 h-2 border border-black rounded-sm relative">
+                            <div className="w-3 h-1 bg-green-500 rounded-sm absolute left-0.5 top-0.5"></div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="absolute top-10 left-0 right-0 bottom-8 flex flex-col overflow-hidden">
+                        {generatedApp ? (
+                          <div className="flex-1 p-3 overflow-y-auto">
+                            <div className="space-y-2">
+                              {(() => {
+                                const currentPageData = generatedApp.pages.find(p => p.name === currentPage);
+                                if (!currentPageData) return null;
+                                
+                                return currentPageData.components.map((componentName: string, index: number) => {
+                                  const component = generatedApp.components[componentName];
+                                  if (!component) return null;
+                                  
+                                  return (
+                                    <div key={index} className="text-xs bg-gray-50 p-2 rounded border">
+                                      <div className="font-medium text-gray-800 mb-1">{component.name}</div>
+                                      <div className="text-gray-600">{component.description}</div>
+                                    </div>
+                                  );
+                                });
+                              })()}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex-1 flex items-center justify-center">
+                            <div className="text-center text-gray-500 p-4">
+                              <div className="text-sm font-medium">{appContent.title}</div>
+                              <div className="text-xs mt-1">{appContent.subtitle}</div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full h-full bg-background rounded-lg border border-border overflow-hidden">
+                    <div className="h-full p-4">
+                      {generatedApp ? (
+                        <div className="h-full bg-black text-green-400 p-4 rounded font-mono text-xs overflow-auto">
+                          <div className="mb-4">
+                            <div className="text-yellow-400 mb-2">-- Generated Schema</div>
+                            <pre className="whitespace-pre-wrap">{generatedApp.schema_sql}</pre>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="h-full bg-muted/10 rounded border border-dashed border-muted-foreground/30 flex items-center justify-center">
+                          <div className="text-center text-muted-foreground">
+                            <Code2 className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                            <p className="text-sm">No app generated yet</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Mobile Input */}
+              <form onSubmit={handleSubmit} className="p-4 border-t border-border bg-background">
+                <div className="relative bg-muted/30 rounded-xl p-3">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="text"
+                      placeholder="Ask myPip..."
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      className="border-0 bg-transparent pr-12 focus:ring-0 focus:outline-none placeholder:text-muted-foreground/60"
+                      disabled={isGenerating}
+                    />
+                    <Button
+                      type="submit"
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      disabled={!inputValue.trim() || isGenerating}
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between mt-2 px-1">
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-400 to-purple-500"></div>
+                    <span>Smart</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">{promptCount}/5 left</span>
+                </div>
+              </form>
+            </div>
+          </div>
+          <SheetContent side="left" className="p-0 w-64">
+            <BuilderSidebar promptCount={promptCount} />
+          </SheetContent>
+        </Sheet>
+      ) : (
+        <>
+          <BuilderSidebar promptCount={promptCount} />
+          
+          <PanelGroup direction="horizontal" className="flex-1">
         {/* Chat Panel */}
         <Panel defaultSize={25} minSize={20} maxSize={40}>
           <div className="h-screen bg-background border-r border-border flex flex-col">
@@ -478,6 +666,8 @@ const AppBuilder = () => {
           </div>
         </Panel>
       </PanelGroup>
+        </>
+      )}
     </div>
   );
 };
