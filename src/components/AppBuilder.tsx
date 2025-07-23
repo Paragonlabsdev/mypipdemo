@@ -3,7 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useState } from "react";
 import { useSearchParams, Outlet, useLocation } from "react-router-dom";
-import { Send, Smartphone, RefreshCw, Paperclip, Share, Monitor, Puzzle } from "lucide-react";
+import { Send, Smartphone, RefreshCw, Paperclip, Share, Monitor, Puzzle, ChevronDown } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { BuilderSidebar } from "@/components/BuilderSidebar";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
@@ -79,48 +80,84 @@ const AppBuilder = () => {
               )}
             </div>
 
-            <form onSubmit={handleSubmit} className="p-4 border-t border-border">
-              <div className="relative bg-muted/30 rounded-xl p-3">
-                <div className="flex items-center gap-2">
+            <div className="p-4 space-y-4">
+              {/* Chat messages would go here */}
+              <div className="bg-muted/50 rounded-2xl p-4 ml-auto max-w-[80%]">
+                <p className="text-sm">Design a fitness app with a bold UI, featuring workout logging and progress tracking.</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-4 border-t-0">
+              <div className="bg-background rounded-2xl border border-border p-4 shadow-sm">
+                <div className="flex items-center gap-3">
                   <Button
                     type="button"
                     size="icon"
                     variant="ghost"
-                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                    className="h-8 w-8 text-muted-foreground hover:text-muted-foreground/80 hover:bg-muted/50"
                   >
                     <Paperclip className="h-4 w-4" />
                   </Button>
                   <Input
                     type="text"
-                    placeholder="Ask Bloom..."
+                    placeholder="Ask myPip..."
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    className="border-0 bg-transparent pr-12 focus:ring-0 focus:outline-none placeholder:text-muted-foreground/60"
+                    className="border-0 bg-transparent flex-1 focus:ring-0 focus:outline-none placeholder:text-muted-foreground/60 focus-visible:ring-0"
                     disabled={isGenerating}
                   />
                   <Button
                     type="submit"
                     size="icon"
                     variant="ghost"
-                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                    className="h-8 w-8 text-muted-foreground hover:text-muted-foreground/80 hover:bg-muted/50"
                     disabled={!inputValue.trim() || isGenerating}
                   >
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
-              </div>
-              <div className="flex items-center justify-between mt-3 px-1">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-400 to-purple-500"></div>
-                    <span>Smart</span>
+                
+                <div className="flex items-center justify-between mt-4">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg px-3 py-1.5"
+                      >
+                        <Puzzle className="h-3 w-3 mr-2" />
+                        Integrations
+                        <ChevronDown className="h-3 w-3 ml-1" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-48">
+                      <DropdownMenuItem className="cursor-pointer">
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-green-500 rounded-sm"></div>
+                          Supabase
+                        </div>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="cursor-pointer">
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-gray-900 dark:bg-white rounded-sm"></div>
+                          GitHub
+                        </div>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="cursor-pointer">
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-blue-500 rounded-sm"></div>
+                          n8n
+                        </div>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="w-4 h-4 rounded-full border border-muted-foreground/30 flex items-center justify-center">
+                      <div className="w-2 h-2 rounded-full bg-muted-foreground/50"></div>
+                    </div>
+                    <span>293/350 left</span>
                   </div>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <div className="w-4 h-4 rounded-full border border-muted-foreground/30 flex items-center justify-center">
-                    <div className="w-2 h-2 rounded-full bg-muted-foreground/50"></div>
-                  </div>
-                  <span>293/350 left</span>
                 </div>
               </div>
             </form>
@@ -150,7 +187,7 @@ const AppBuilder = () => {
                   <Share className="h-4 w-4 mr-1" />
                   Share
                 </Button>
-                <Button variant="ghost" size="sm" className="text-xs">
+                <Button variant="ghost" size="sm" className="text-xs bg-blue-500 text-white hover:bg-blue-600">
                   <Monitor className="h-4 w-4 mr-1" />
                   Preview on device
                 </Button>
