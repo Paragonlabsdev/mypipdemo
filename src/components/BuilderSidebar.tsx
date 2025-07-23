@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Settings, DollarSign, Puzzle, Layers, ChevronLeft, ChevronRight, Zap, User, Users } from "lucide-react";
+import { Settings, DollarSign, Puzzle, Layers, ChevronLeft, ChevronRight, Zap, User, Users, Plus, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AccountDisplay } from "@/components/AccountDisplay";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const sidebarItems = [
   { title: "App Builder", url: "/builder", icon: Zap },
@@ -20,6 +23,12 @@ interface BuilderSidebarProps {
 
 export const BuilderSidebar = ({ promptCount }: BuilderSidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
+  const [projects] = useState([
+    { id: 1, name: "Flappy Bird Game", lastModified: "2 hours ago" },
+    { id: 2, name: "Calorie Tracker", lastModified: "1 day ago" },
+    { id: 3, name: "Todo App", lastModified: "3 days ago" },
+  ]);
   const location = useLocation();
 
   return (
@@ -32,19 +41,55 @@ export const BuilderSidebar = ({ promptCount }: BuilderSidebarProps) => {
         isCollapsed ? "justify-center" : "justify-between"
       )}>
         {!isCollapsed && <h2 className="text-lg font-semibold">Navigation</h2>}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setIsCollapsed(!isCollapsed)}
-        >
-          {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsNewProjectModalOpen(true)}
+            className="text-primary hover:bg-primary/10"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+          >
+            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </Button>
+        </div>
       </div>
       
       <nav className={cn("flex-1 p-4", isCollapsed && "flex flex-col items-center")}>
         <ul className={cn("space-y-2", isCollapsed && "flex flex-col items-center")}>
           {sidebarItems.map((item) => {
             const isActive = location.pathname === item.url;
+            
+            // Special handling for MyPips to show projects dropdown
+            if (item.title === "MyPips" && !isCollapsed) {
+              return (
+                <li key={item.title} className="w-full">
+                  <div className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-lg",
+                    "text-muted-foreground"
+                  )}>
+                    <item.icon className="h-5 w-5 flex-shrink-0" />
+                    <span>MyPips</span>
+                  </div>
+                  <ul className="ml-8 mt-2 space-y-1">
+                    {projects.map((project) => (
+                      <li key={project.id}>
+                        <button className="flex items-center gap-2 px-2 py-1 rounded text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors w-full text-left">
+                          <FileText className="h-3 w-3" />
+                          <span className="truncate">{project.name}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              );
+            }
+            
             return (
               <li key={item.title}>
                 <NavLink
@@ -75,6 +120,43 @@ export const BuilderSidebar = ({ promptCount }: BuilderSidebarProps) => {
           </div>
         </div>
       )}
+      
+      {/* New Project Modal */}
+      <Dialog open={isNewProjectModalOpen} onOpenChange={setIsNewProjectModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create New Project</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="project-name">Project Name</Label>
+              <Input id="project-name" placeholder="My Awesome App" />
+            </div>
+            
+            <div>
+              <Label htmlFor="project-description">Description (Optional)</Label>
+              <Input id="project-description" placeholder="Brief description of your app" />
+            </div>
+            
+            <div className="flex gap-2 pt-4">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => setIsNewProjectModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-2xl"
+                onClick={() => setIsNewProjectModalOpen(false)}
+              >
+                Create Project
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -15,6 +15,7 @@ const HeroSection = () => {
     e.preventDefault();
     if (inputValue.trim()) {
       navigate(`/builder?prompt=${encodeURIComponent(inputValue)}`);
+      setInputValue(""); // Clear input after navigation
     }
   };
 
@@ -26,6 +27,7 @@ const HeroSection = () => {
   ];
 
   const handleExampleClick = (text: string) => {
+    setInputValue(""); // Clear any existing input
     navigate(`/builder?prompt=${encodeURIComponent(text)}`);
   };
 
@@ -61,7 +63,7 @@ const HeroSection = () => {
               className={`absolute ${isMobile ? 'right-1 top-1 h-10 w-10' : 'right-2 top-2 h-10 w-10'} rounded-xl bg-foreground hover:bg-foreground/90`}
               disabled={!inputValue.trim()}
             >
-              <Send className="h-4 w-4 text-background" />
+              <Send className="h-4 w-4 text-background" fill="currentColor" />
             </Button>
           </div>
         </form>

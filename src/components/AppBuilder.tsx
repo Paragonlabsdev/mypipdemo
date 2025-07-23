@@ -319,9 +319,9 @@ const AppBuilder = () => {
               </div>
 
               {/* Mobile Input */}
-              <div className="p-4 bg-background border-t-0 rounded-t-lg border border-border mx-4 mb-4">
+              <div className="p-4 bg-background rounded-3xl border border-border mx-4 mb-4">
                 <form onSubmit={handleSubmit}>
-                  <div className="relative bg-muted/30 rounded-xl p-3">
+                  <div className="relative bg-muted/30 rounded-2xl p-3">
                     <div className="flex items-center gap-2">
                       <Input
                         type="text"
@@ -393,9 +393,9 @@ const AppBuilder = () => {
               )}
             </div>
 
-            <div className="p-4 bg-background border-t-0 rounded-t-lg border border-border mx-4 mb-4">
+            <div className="p-4 bg-background rounded-3xl border border-border mx-4 mb-4">
               <form onSubmit={handleSubmit}>
-                <div className="relative bg-muted/30 rounded-xl p-3">
+                <div className="relative bg-muted/30 rounded-2xl p-3">
                   <div className="flex items-center gap-2">
                     <Button
                       type="button"
@@ -509,8 +509,7 @@ const AppBuilder = () => {
 
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button variant="ghost" size="sm" className="text-xs bg-green-500 text-white hover:bg-green-600">
-                      <Apple className="h-4 w-4 mr-1" />
+                    <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-2xl px-4 py-2 text-sm">
                       Publish
                     </Button>
                   </DialogTrigger>
@@ -545,7 +544,7 @@ const AppBuilder = () => {
 
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="ghost" size="sm" className="text-xs bg-blue-500 text-white hover:bg-blue-600">
+                    <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-2xl px-4 py-2 text-sm">
                       <Monitor className="h-4 w-4 mr-1" />
                       Preview on device
                     </Button>
@@ -686,21 +685,30 @@ const AppBuilder = () => {
                     {/* Code Content */}
                     <div className="flex-1 p-4">
                       {generatedApp ? (
-                        <div className="h-full bg-black text-green-400 p-4 rounded font-mono text-xs overflow-auto">
-                          <div className="mb-4">
-                            <div className="text-yellow-400 mb-2">-- Generated Database Schema</div>
-                            <pre className="whitespace-pre-wrap">{generatedApp.schema_sql}</pre>
-                          </div>
-                          <div className="mt-6">
-                            <div className="text-yellow-400 mb-2">-- App Structure</div>
-                            <pre className="whitespace-pre-wrap text-blue-300">
-{JSON.stringify({
-  pages: generatedApp.pages,
-  components: generatedApp.components,
-  api_endpoints: generatedApp.api_endpoints
-}, null, 2)}
-                            </pre>
-                          </div>
+                        <div className="h-full bg-gray-900 text-gray-300 p-4 rounded font-mono text-sm overflow-auto">
+                          {generatedApp.generatedFiles && Object.entries(generatedApp.generatedFiles).map(([filename, content]) => (
+                            <div key={filename} className="mb-6 border-b border-gray-700 pb-4">
+                              <div className="flex items-center gap-2 mb-3 sticky top-0 bg-gray-900 py-2">
+                                <FileText className="h-4 w-4 text-blue-400" />
+                                <span className="text-blue-400 font-medium">{filename}</span>
+                              </div>
+                              <pre className="text-gray-300 text-xs whitespace-pre-wrap bg-gray-800 p-3 rounded border overflow-x-auto">
+                                {typeof content === 'string' ? content : JSON.stringify(content, null, 2)}
+                              </pre>
+                            </div>
+                          ))}
+                          
+                          {generatedApp.schema_sql && (
+                            <div className="mb-6 border-b border-gray-700 pb-4">
+                              <div className="flex items-center gap-2 mb-3 sticky top-0 bg-gray-900 py-2">
+                                <FileText className="h-4 w-4 text-green-400" />
+                                <span className="text-green-400 font-medium">schema.sql</span>
+                              </div>
+                              <pre className="text-gray-300 text-xs whitespace-pre-wrap bg-gray-800 p-3 rounded border overflow-x-auto">
+                                {generatedApp.schema_sql}
+                              </pre>
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div className="h-full bg-muted/10 rounded border border-dashed border-muted-foreground/30 flex items-center justify-center">
