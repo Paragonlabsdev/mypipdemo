@@ -14,7 +14,171 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      app_builds: {
+        Row: {
+          app_id: string
+          build_id: string | null
+          build_url: string | null
+          created_at: string
+          id: string
+          platform: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          app_id: string
+          build_id?: string | null
+          build_url?: string | null
+          created_at?: string
+          id?: string
+          platform: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          app_id?: string
+          build_id?: string | null
+          build_url?: string | null
+          created_at?: string
+          id?: string
+          platform?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "app_builds_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      app_components: {
+        Row: {
+          app_id: string
+          code: string | null
+          created_at: string
+          id: string
+          name: string
+          props_schema: Json | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          app_id: string
+          code?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          props_schema?: Json | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          app_id?: string
+          code?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          props_schema?: Json | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "app_components_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      app_screens: {
+        Row: {
+          app_id: string
+          code: string | null
+          component_name: string
+          created_at: string
+          id: string
+          layout_data: Json | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          app_id: string
+          code?: string | null
+          component_name: string
+          created_at?: string
+          id?: string
+          layout_data?: Json | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          app_id?: string
+          code?: string | null
+          component_name?: string
+          created_at?: string
+          id?: string
+          layout_data?: Json | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "app_screens_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      apps: {
+        Row: {
+          code_data: Json | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          plan_data: Json | null
+          prompt: string
+          status: string
+          ui_data: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          code_data?: Json | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          plan_data?: Json | null
+          prompt: string
+          status?: string
+          ui_data?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          code_data?: Json | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          plan_data?: Json | null
+          prompt?: string
+          status?: string
+          ui_data?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
