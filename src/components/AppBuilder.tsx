@@ -287,7 +287,7 @@ const AppBuilder = () => {
                             {Object.entries(generatedApp.components).map(([name, code]) => (
                               <div key={name} className="mb-4">
                                 <div className="text-blue-300 mb-2">{name}.tsx</div>
-                                <pre className="whitespace-pre-wrap text-white">{code}</pre>
+                                <pre className="whitespace-pre-wrap text-white">{typeof code === 'string' ? code : JSON.stringify(code, null, 2)}</pre>
                               </div>
                             ))}
                           </div>
