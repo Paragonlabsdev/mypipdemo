@@ -25,7 +25,7 @@ export const AccountModal = ({ isOpen, onOpenChange }: AccountModalProps) => {
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-xs p-0 rounded-2xl shadow-xl border-0 relative">
+        <DialogContent className="max-w-xs p-0 rounded-2xl shadow-xl border-0 relative" style={{marginTop: '3.5rem'}}>
           {/* Close Button */}
           <Button 
             variant="ghost" 
@@ -53,7 +53,7 @@ export const AccountModal = ({ isOpen, onOpenChange }: AccountModalProps) => {
                 boxShadow: "0 4px 14px 0 rgba(120, 120, 120, 0.39)"
               }}
             >
-              INICIAR
+              Upgrade
             </Button>
           </div>
           

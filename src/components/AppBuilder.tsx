@@ -534,9 +534,25 @@ const AppBuilder = () => {
                    </PopoverContent>
                  </Popover>
 
-                 <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 py-2 text-sm shadow-lg">
-                   Publish
-                 </Button>
+                 <Popover>
+                   <PopoverTrigger asChild>
+                     <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 py-2 text-sm shadow-lg">
+                       Publish
+                     </Button>
+                   </PopoverTrigger>
+                   <PopoverContent className="w-48 p-2" align="end">
+                     <div className="space-y-2">
+                       <Button variant="ghost" className="w-full justify-start text-left">
+                         <Apple className="h-4 w-4 mr-2 text-blue-500" />
+                         iOS App Store
+                       </Button>
+                       <Button variant="ghost" className="w-full justify-start text-left">
+                         <PlayCircle className="h-4 w-4 mr-2 text-green-500" />
+                         Google Play Store
+                       </Button>
+                     </div>
+                   </PopoverContent>
+                 </Popover>
 
                  <Button 
                    onClick={() => setIsPreviewModalOpen(true)}
@@ -559,25 +575,6 @@ const AppBuilder = () => {
               </div>
             </div>
 
-            {/* Page Selector Above Phone */}
-            {!showCodeView && generatedApp && (
-              <div className="px-8 py-2 bg-background border-b border-border">
-                <div className="flex justify-center">
-                  <Select value={currentPage} onValueChange={setCurrentPage}>
-                    <SelectTrigger className="w-48">
-                      <SelectValue placeholder="Select page" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {generatedApp && generatedApp.pages && generatedApp.pages.map((page: any) => (
-                        <SelectItem key={page.name} value={page.name}>
-                          {page.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            )}
 
             <div className="flex-1 flex items-center justify-center p-8 relative">
               {!showCodeView && (
@@ -894,11 +891,6 @@ const AppBuilder = () => {
           </DialogContent>
         </Dialog>
       
-      <AccountModal 
-        isOpen={isAccountModalOpen} 
-        onOpenChange={setIsAccountModalOpen} 
-      />
-
       {/* API Modal */}
       <Dialog open={isApiModalOpen} onOpenChange={setIsApiModalOpen}>
         <DialogContent className="max-w-md rounded-2xl">

@@ -38,7 +38,7 @@ export const PreviewDeviceModal = ({ isOpen, onOpenChange }: PreviewDeviceModalP
                 className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                   platform.active 
                     ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' 
-                    : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                    : 'text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                 }`}
               >
                 <IconComponent className="w-4 h-4 mr-1" />
@@ -54,7 +54,7 @@ export const PreviewDeviceModal = ({ isOpen, onOpenChange }: PreviewDeviceModalP
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
                 <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm7.5 8.5h-4.75L12 6l-2.75 2.5H4.5l3.25-3.25L12 1l4.25 4.25L19.5 8.5z"/>
+                  <path d="M24 6c0-3.313-2.687-6-6-6s-6 2.687-6 6v4.053c0 3.313 2.687 6 6 6s6-2.687 6-6zm-5.999 0v4.053c0 2.206-1.794 4-4 4s-4-1.794-4-4V6c0-2.206 1.794-4 4-4s4 1.794 4 4z"/>
                 </svg>
               </div>
               <div>
@@ -72,22 +72,11 @@ export const PreviewDeviceModal = ({ isOpen, onOpenChange }: PreviewDeviceModalP
         <div className="text-center py-4">
           <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-4">
             <div className="w-32 h-32 mx-auto bg-white rounded-lg p-2 shadow-sm">
-              {/* More Realistic QR Code */}
-              <div className="w-full h-full bg-white rounded grid grid-cols-16 gap-px p-1">
-                {Array.from({ length: 256 }).map((_, i) => {
-                  const row = Math.floor(i / 16);
-                  const col = i % 16;
-                  const isCorner = (row < 3 && col < 3) || (row < 3 && col > 12) || (row > 12 && col < 3);
-                  const isBorder = row === 0 || row === 15 || col === 0 || col === 15;
-                  const isPattern = isCorner || isBorder || Math.random() > 0.6;
-                  return (
-                    <div 
-                      key={i} 
-                      className={`${isPattern ? 'bg-black' : 'bg-white'} aspect-square`}
-                    />
-                  );
-                })}
-              </div>
+              <img 
+                src="/lovable-uploads/200af0d0-77b3-4e5f-887a-647e97cec2b6.png" 
+                alt="QR Code" 
+                className="w-full h-full object-contain"
+              />
             </div>
           </div>
           
