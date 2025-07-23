@@ -59,16 +59,15 @@ const AppBuilder = () => {
               subtitle: "Please try again with a different prompt."
             });
           } else {
-            // Successfully generated app
+            // Successfully generated React Native app
             setGeneratedApp(data);
-            setCurrentPage(data.pages[0]?.name || "Home");
             setChatHistory(prev => [...prev, { 
               type: 'assistant', 
-              content: `✅ Generated your ${initialPrompt} app! It includes ${data.pages.length} pages: ${data.pages.map(p => p.name).join(', ')}. ${data.summary}` 
+              content: `🎉 Generated your React Native app: ${data.appName}! ${data.summary}\n\n📱 Ready to run with:\n• npm install\n• npx expo start\n• Scan QR code or use simulator` 
             }]);
             setAppContent({
-              title: data.pages[0]?.name || "Your App",
-              subtitle: data.summary || "App generated successfully!"
+              title: data.appName || "Your React Native App",
+              subtitle: data.summary || "React Native app generated successfully!"
             });
           }
         } catch (err) {
@@ -118,16 +117,15 @@ const AppBuilder = () => {
             subtitle: "Please try again with a different prompt."
           });
         } else {
-          // Successfully generated app
+          // Successfully generated React Native app
           setGeneratedApp(data);
-          setCurrentPage(data.pages[0]?.name || "Home");
           setChatHistory(prev => [...prev, { 
             type: 'assistant', 
-            content: `✅ Generated your ${userMessage} app! It includes ${data.pages.length} pages: ${data.pages.map(p => p.name).join(', ')}. ${data.summary}` 
+            content: `🎉 Generated your React Native app: ${data.appName}! ${data.summary}\n\n📱 Ready to run with:\n• npm install\n• npx expo start\n• Scan QR code or use simulator` 
           }]);
           setAppContent({
-            title: data.pages[0]?.name || "Your App",
-            subtitle: data.summary || "App generated successfully!"
+            title: data.appName || "Your React Native App",
+            subtitle: data.summary || "React Native app generated successfully!"
           });
         }
       } catch (err) {
@@ -259,22 +257,24 @@ const AppBuilder = () => {
                         {generatedApp ? (
                           <div className="flex-1 p-3 overflow-y-auto">
                             <div className="space-y-2">
-                              {(() => {
-                                const currentPageData = generatedApp.pages.find(p => p.name === currentPage);
-                                if (!currentPageData) return null;
-                                
-                                return currentPageData.components.map((componentName: string, index: number) => {
-                                  const component = generatedApp.components[componentName];
-                                  if (!component) return null;
-                                  
-                                  return (
-                                    <div key={index} className="text-xs bg-gray-50 p-2 rounded border">
-                                      <div className="font-medium text-gray-800 mb-1">{component.name}</div>
-                                      <div className="text-gray-600">{component.description}</div>
-                                    </div>
-                                  );
-                                });
-                              })()}
+                              <div className="text-xs bg-blue-50 p-2 rounded border border-blue-200">
+                                <div className="font-medium text-blue-800 mb-1">📱 {generatedApp.appName}</div>
+                                <div className="text-blue-600 text-[10px]">{generatedApp.description}</div>
+                              </div>
+                              
+                              <div className="text-xs bg-green-50 p-2 rounded border border-green-200">
+                                <div className="font-medium text-green-800 mb-1">✅ Ready to Install</div>
+                                <div className="text-green-600 text-[10px]">
+                                  {generatedApp.installInstructions?.slice(0, 2).join(' → ') || 'npm install → npx expo start'}
+                                </div>
+                              </div>
+                              
+                              <div className="text-xs bg-purple-50 p-2 rounded border border-purple-200">
+                                <div className="font-medium text-purple-800 mb-1">📁 Files Generated</div>
+                                <div className="text-purple-600 text-[10px]">
+                                  {generatedApp.generatedFiles ? Object.keys(generatedApp.generatedFiles).length : 0} files ready
+                                </div>
+                              </div>
                             </div>
                           </div>
                         ) : (
@@ -291,11 +291,18 @@ const AppBuilder = () => {
                 ) : (
                   <div className="w-full h-full bg-background rounded-lg border border-border overflow-hidden">
                     <div className="h-full p-4">
-                      {generatedApp ? (
+                    {generatedApp ? (
                         <div className="h-full bg-black text-green-400 p-4 rounded font-mono text-xs overflow-auto">
                           <div className="mb-4">
-                            <div className="text-yellow-400 mb-2">-- Generated Schema</div>
-                            <pre className="whitespace-pre-wrap">{generatedApp.schema_sql}</pre>
+                            <div className="text-yellow-400 mb-2">-- React Native App Files --</div>
+                            {generatedApp.generatedFiles && Object.entries(generatedApp.generatedFiles).map(([filename, content]) => (
+                              <div key={filename} className="mb-4">
+                                <div className="text-blue-400 mb-1">{filename}</div>
+                                <pre className="text-gray-300 text-[10px] whitespace-pre-wrap bg-gray-900 p-2 rounded max-h-32 overflow-y-auto">
+                                  {typeof content === 'string' ? content.slice(0, 500) + (content.length > 500 ? '...' : '') : JSON.stringify(content, null, 2).slice(0, 500)}
+                                </pre>
+                              </div>
+                            ))}
                           </div>
                         </div>
                       ) : (
