@@ -58,10 +58,10 @@ export const BuilderSidebar = ({ promptCount }: BuilderSidebarProps) => {
             onClick={() => setIsNewProjectModalOpen(true)}
             className={cn(
               "bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 text-white shadow-lg",
-              isCollapsed ? "w-10 h-10 rounded-full p-0" : "w-full rounded-xl"
+              isCollapsed ? "w-12 h-12 rounded-full p-0" : "w-full rounded-xl"
             )}
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-5 w-5" />
             {!isCollapsed && <span className="ml-2">New Project</span>}
           </Button>
         </div>
