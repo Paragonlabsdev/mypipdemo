@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useState, useEffect } from "react";
 import { useSearchParams, Outlet, useLocation } from "react-router-dom";
-import { Send, Smartphone, RefreshCw, Paperclip, Share, Monitor, Puzzle, Code2, FileText, Folder, FolderOpen, Menu, QrCode, ChevronDown, Apple, PlayCircle, Github, Database, Workflow, Flame } from "lucide-react";
+import { Send, Smartphone, RefreshCw, Paperclip, Share, Monitor, Puzzle, Code2, FileText, Folder, FolderOpen, Menu, QrCode, ChevronDown, Apple, PlayCircle, Github, Database, Workflow, Flame, User } from "lucide-react";
 import { BuilderSidebar } from "@/components/BuilderSidebar";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +12,9 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { PreviewDeviceModal } from "@/components/PreviewDeviceModal";
+import { AccountModal } from "@/components/AccountModal";
 
 const AppBuilder = () => {
   const [searchParams] = useSearchParams();
@@ -30,6 +33,10 @@ const AppBuilder = () => {
   const [currentPage, setCurrentPage] = useState("Home");
   const [chatHistory, setChatHistory] = useState<Array<{type: 'user' | 'assistant', content: string}>>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+  const [isApiModalOpen, setIsApiModalOpen] = useState(false);
+  const [selectedIntegration, setSelectedIntegration] = useState<string>("");
   const isMobile = useIsMobile();
 
   // Auto-generate app when initial prompt is provided
@@ -464,113 +471,91 @@ const AppBuilder = () => {
                   <Code2 className="h-4 w-4" />
                 </Button>
                 
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="ghost" size="sm" className="text-xs hover:bg-muted">
-                      <Puzzle className="h-4 w-4" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-80 p-4" align="end">
-                    <div className="space-y-4">
-                      <h3 className="font-semibold text-sm">Integrations</h3>
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/50 cursor-pointer">
-                          <div className="flex items-center gap-3">
-                            <Github className="h-5 w-5" />
-                            <span className="text-sm font-medium">GitHub</span>
-                          </div>
-                          <Button size="sm" variant="outline">Connect</Button>
-                        </div>
-                        <div className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/50 cursor-pointer">
-                          <div className="flex items-center gap-3">
-                            <Database className="h-5 w-5" />
-                            <span className="text-sm font-medium">Supabase</span>
-                          </div>
-                          <Button size="sm" variant="outline">Connect</Button>
-                        </div>
-                        <div className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/50 cursor-pointer">
-                          <div className="flex items-center gap-3">
-                            <Workflow className="h-5 w-5" />
-                            <span className="text-sm font-medium">n8n</span>
-                          </div>
-                          <Button size="sm" variant="outline">Connect</Button>
-                        </div>
-                        <div className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/50 cursor-pointer">
-                          <div className="flex items-center gap-3">
-                            <Flame className="h-5 w-5" />
-                            <span className="text-sm font-medium">Firebase</span>
-                          </div>
-                          <Button size="sm" variant="outline">Connect</Button>
-                        </div>
-                      </div>
-                    </div>
-                  </PopoverContent>
-                </Popover>
+                 <Popover>
+                   <PopoverTrigger asChild>
+                     <Button variant="ghost" size="sm" className="text-xs hover:bg-gray-200 dark:hover:bg-gray-700">
+                       <Puzzle className="h-4 w-4" />
+                     </Button>
+                   </PopoverTrigger>
+                   <PopoverContent className="w-80 p-4" align="end">
+                     <div className="space-y-4">
+                       <h3 className="font-semibold text-sm">Integrations</h3>
+                       <div className="space-y-3">
+                         <div 
+                           className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/50 cursor-pointer"
+                           onClick={() => { setSelectedIntegration("GitHub"); setIsApiModalOpen(false); }}
+                         >
+                           <div className="flex items-center gap-3">
+                             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
+                               <Github className="h-4 w-4 text-white" />
+                             </div>
+                             <span className="text-sm font-medium">GitHub</span>
+                           </div>
+                           <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg">Connect</Button>
+                         </div>
+                         <div 
+                           className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/50 cursor-pointer"
+                           onClick={() => { setSelectedIntegration("Supabase"); setIsApiModalOpen(true); }}
+                         >
+                           <div className="flex items-center gap-3">
+                             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
+                               <Database className="h-4 w-4 text-white" />
+                             </div>
+                             <span className="text-sm font-medium">Supabase</span>
+                           </div>
+                           <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg">Add API</Button>
+                         </div>
+                         <div 
+                           className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/50 cursor-pointer"
+                           onClick={() => { setSelectedIntegration("n8n"); setIsApiModalOpen(true); }}
+                         >
+                           <div className="flex items-center gap-3">
+                             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
+                               <Workflow className="h-4 w-4 text-white" />
+                             </div>
+                             <span className="text-sm font-medium">n8n</span>
+                           </div>
+                           <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg">Add API</Button>
+                         </div>
+                         <div 
+                           className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/50 cursor-pointer"
+                           onClick={() => { setSelectedIntegration("Firebase"); setIsApiModalOpen(true); }}
+                         >
+                           <div className="flex items-center gap-3">
+                             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
+                               <Flame className="h-4 w-4 text-white" />
+                             </div>
+                             <span className="text-sm font-medium">Firebase</span>
+                           </div>
+                           <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg">Add API</Button>
+                         </div>
+                       </div>
+                     </div>
+                   </PopoverContent>
+                 </Popover>
 
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-2xl px-4 py-2 text-sm">
-                      Publish
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Publish App</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                      <div className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 cursor-pointer">
-                        <div className="flex items-center gap-3">
-                          <Apple className="h-6 w-6" />
-                          <div>
-                            <div className="font-medium text-sm">Apple App Store</div>
-                            <div className="text-xs text-muted-foreground">Publish to iOS</div>
-                          </div>
-                        </div>
-                        <Button size="sm">Publish</Button>
-                      </div>
-                      <div className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 cursor-pointer">
-                        <div className="flex items-center gap-3">
-                          <PlayCircle className="h-6 w-6" />
-                          <div>
-                            <div className="font-medium text-sm">Google Play Store</div>
-                            <div className="text-xs text-muted-foreground">Publish to Android</div>
-                          </div>
-                        </div>
-                        <Button size="sm">Publish</Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                 <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 py-2 text-sm shadow-lg">
+                   Publish
+                 </Button>
 
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-2xl px-4 py-2 text-sm">
-                      <Monitor className="h-4 w-4 mr-1" />
-                      Preview on device
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-80 p-4" align="end">
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2">
-                        <Smartphone className="h-5 w-5" />
-                        <h3 className="font-semibold text-sm">App Clip Preview</h3>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Scan this QR code with your camera app to open the App Clip instantly.
-                      </p>
-                      <div className="flex justify-center">
-                        <img 
-                          src="/lovable-uploads/7c2366f5-f687-427e-a695-2f09dfdea97b.png" 
-                          alt="QR Code"
-                          className="w-32 h-32 rounded-lg"
-                        />
-                      </div>
-                      <p className="text-xs text-center text-muted-foreground">
-                        If you experience any issues, try downloading the full app from the App Store.
-                      </p>
-                    </div>
-                  </PopoverContent>
-                </Popover>
+                 <Button 
+                   onClick={() => setIsPreviewModalOpen(true)}
+                   className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 py-2 text-sm shadow-lg"
+                 >
+                   <Monitor className="h-4 w-4 mr-1" />
+                   Preview on device
+                 </Button>
+
+                 <Button
+                   onClick={() => setIsAccountModalOpen(true)}
+                   variant="ghost"
+                   size="sm"
+                   className="w-8 h-8 rounded-full p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
+                 >
+                   <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                     <User className="h-4 w-4 text-white" />
+                   </div>
+                 </Button>
               </div>
             </div>
 
@@ -862,6 +847,52 @@ const AppBuilder = () => {
       </PanelGroup>
         </>
       )}
+      
+      {/* Modals */}
+      <PreviewDeviceModal 
+        isOpen={isPreviewModalOpen} 
+        onOpenChange={setIsPreviewModalOpen} 
+      />
+      
+      <AccountModal 
+        isOpen={isAccountModalOpen} 
+        onOpenChange={setIsAccountModalOpen} 
+      />
+
+      {/* API Modal */}
+      <Dialog open={isApiModalOpen} onOpenChange={setIsApiModalOpen}>
+        <DialogContent className="max-w-md rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>Add API Key for {selectedIntegration}</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="api-key">API Key</Label>
+              <Input id="api-key" type="password" placeholder="Enter your API key" className="mt-1" />
+            </div>
+            
+            <div className="flex gap-2 pt-4">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => setIsApiModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg"
+                onClick={() => {
+                  setIsApiModalOpen(false);
+                  // Auto-save API key logic would go here
+                }}
+              >
+                Save & Connect
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

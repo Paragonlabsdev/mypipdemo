@@ -13,25 +13,25 @@ export const PricingModal = ({ isOpen, onOpenChange }: PricingModalProps) => {
   
   const plans = [
     {
-      name: "myPip Basic",
+      name: "Basic",
       price: "$20",
-      description: "Basic plan for all user",
-      billing: "billed every month",
+      description: "Perfect for getting started with AI app building",
+      billing: "per month",
       features: ["1,000 prompts per month", "25 App Morphs", "20 Monthly Remixes", "Advanced AI features"],
     },
     {
-      name: "myPip Pro",
+      name: "Pro",
       price: "$33",
-      description: "Get access to everything",
-      billing: "billed every month",
+      description: "Everything you need for professional development",
+      billing: "per month",
       features: ["10,000 build credits", "100 App Morphs", "100 Monthly Remixes", "Priority support"],
       popular: true,
     },
     {
-      name: "myPip Enterprise",
+      name: "Enterprise",
       price: "$199",
-      description: "Best for larger teams",
-      billing: "billed every month",
+      description: "Advanced features for larger teams",
+      billing: "per month",
       features: ["Everything in Professional, Plus", "Unlimited remixes", "Unlimited App Morphs", "Dedicated support"],
     },
   ];
@@ -40,7 +40,14 @@ export const PricingModal = ({ isOpen, onOpenChange }: PricingModalProps) => {
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-7xl max-h-[90vh] overflow-auto p-6 rounded-xl">
         <DialogHeader className="mb-6">
-          <DialogTitle className="text-2xl font-bold text-center">Choose Your Plan</DialogTitle>
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <img 
+              src="/lovable-uploads/4a498ce0-adaa-4ce1-9e25-feb7c23909d1.png" 
+              alt="Colorful sphere" 
+              className="w-10 h-10 object-cover"
+            />
+            <DialogTitle className="text-2xl font-bold">Choose Your Plan</DialogTitle>
+          </div>
           <p className="text-muted-foreground text-center">
             Select the perfect plan for your app building needs.
           </p>
@@ -48,10 +55,10 @@ export const PricingModal = ({ isOpen, onOpenChange }: PricingModalProps) => {
         
         <div className={`grid grid-cols-1 ${isMobile ? 'gap-4' : 'md:grid-cols-3 gap-6'}`}>
           {plans.map((plan) => (
-            <div key={plan.name} className={`relative rounded-2xl ${isMobile ? 'p-6' : 'p-8'} ${
+            <div key={plan.name} className={`relative rounded-3xl ${isMobile ? 'p-6' : 'p-8'} ${
               plan.popular 
-                ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white' 
-                : 'bg-gradient-to-br from-gray-900 to-gray-800 text-white'
+                ? 'bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white shadow-2xl border-2 border-white/20' 
+                : 'bg-gradient-to-br from-slate-900 to-slate-800 text-white border border-slate-700'
             }`}>
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
@@ -86,10 +93,10 @@ export const PricingModal = ({ isOpen, onOpenChange }: PricingModalProps) => {
               </div>
               
               <Button 
-                className={`w-full rounded-xl font-medium ${isMobile ? 'py-3 text-sm' : 'py-4'} ${
+                className={`w-full rounded-2xl font-medium transition-all duration-300 ${isMobile ? 'py-3 text-sm' : 'py-4'} ${
                   plan.popular 
-                    ? 'bg-white text-blue-600 hover:bg-gray-100' 
-                    : 'bg-transparent border-2 border-white text-white hover:bg-white hover:text-gray-900'
+                    ? 'bg-white text-purple-600 hover:bg-gray-100 shadow-lg hover:shadow-xl' 
+                    : 'bg-transparent border-2 border-white text-white hover:bg-white hover:text-slate-900 hover:shadow-lg'
                 }`}
               >
                 Get Started

@@ -32,7 +32,7 @@ const Integrations = () => {
       name: "Firebase", 
       category: "Backend as a Service", 
       description: "Google's comprehensive platform for building web and mobile applications",
-      logo: "https://firebase.google.com/static/images/brand-guidelines/logo-logomark.png",
+      logo: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAyNCAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQuNzEzODkgOS4xMTExMUw2LjY2OTUgNS4xOTlDNi45MzU5NCA0LjY2NjU0IDcuNjQ0MjggNC42NjY1NCA3LjkxMDczIDUuMTk5TDE5Ljk2MDkgMjguMjhMMTQuNTU1NiAzMS4wMDUzTDQuNzEzODkgOS4xMTExMVoiIGZpbGw9IiNGRkNBMjgiLz4KPHBhdGggZD0iTTE5Ljk2MDkgMjguMjhMMTQuNTU1NiAzMS4wMDUzTDQuNzEzODkgOS4xMTExMUw2LjY2OTUgNS4xOTlDNi45MzU5NCA0LjY2NjU0IDcuNjQ0MjggNC42NjY1NCA3LjkxMDczIDUuMTk5TDE5Ljk2MDkgMjguMjhaIiBmaWxsPSIjRkZDQTI4Ii8+CjxwYXRoIGQ9Ik0xMS44ODg5IDEuNzc3NzhMMTMuODQ0NSAyLjUyTDE5Ljk2MDkgMjguMjhMMTQuNTU1NiAzMS4wMDUzTDQuNzEzODkgOS4xMTExMUwxMS44ODg5IDEuNzc3NzhaIiBmaWxsPSIjRkY4RjAwIi8+CjxwYXRoIGQ9Ik00LjcxMzg5IDkuMTExMTFMMTkuOTYwOSAyOC4yOEwyMi4yMjIyIDI2LjY0NDRDMjIuNjQ1IDI2LjM3OCAyMi44ODg5IDI1LjkxMDcgMjIuODg4OSAyNS40MTMzVjEwTDIwLjkzMzMgNi4wODg4OUMyMC43MzMzIDUuNjY2NjcgMjAuMTc3OCA1LjU1NTU2IDE5Ljg0NDQgNS44NDQ0NEw0LjcxMzg5IDkuMTExMTFaIiBmaWxsPSIjRkY4RjAwIi8+Cjwvc3ZnPgo=",
       bgColor: "bg-gradient-to-br from-yellow-400 to-orange-500",
       iconColor: "text-white",
     },
@@ -40,15 +40,15 @@ const Integrations = () => {
       name: "n8n", 
       category: "Workflow Automation",
       description: "Powerful workflow automation tool for connecting apps and automating tasks",
-      logo: "https://docs.n8n.io/favicon.ico",
-      bgColor: "bg-gradient-to-br from-purple-500 to-purple-700",
+      logo: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDI0QzE4LjYyNzQgMjQgMjQgMTguNjI3NCAyNCAxMkMyNCA1LjM3MjU4IDE4LjYyNzQgMCAxMiAwQzUuMzcyNTggMCAwIDUuMzcyNTggMCAxMkMwIDE4LjYyNzQgNS4zNzI1OCAyNCAxMiAyNFoiIGZpbGw9IiNGRjZEMzciLz4KPHBhdGggZD0iTTEyIDIxLjNDMTcuMTM4NiAyMS4zIDIxLjMgMTcuMTM4NiAyMS4zIDEyQzIxLjMgNi44NjE0NCAxNy4xMzg2IDIuNyAxMiAyLjdDNi44NjE0NCAyLjcgMi43IDYuODYxNDQgMi43IDEyQzIuNyAxNy4xMzg2IDYuODYxNDQgMjEuMyAxMiAyMS4zWiIgZmlsbD0iI0VBNDAzQyIvPgo8L3N2Zz4K",
+      bgColor: "bg-gradient-to-br from-orange-400 to-red-500",
       iconColor: "text-white",
     },
     { 
       name: "GitHub", 
       category: "Version Control",
       description: "The world's leading software development platform with Git-based version control",
-      logo: "https://github.githubassets.com/favicons/favicon-dark.svg",
+      logo: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDBDNS4zNzQgMCAwIDUuNTA0IDAgMTIuMzA0QzAgMTcuNzQyIDMuNDM4IDIyLjQ1IDguMjA3IDI0LjAyNEM4LjgwNyAyNC4xNCA5LjAyNyAyMy43NCA5LjAyNyAyMy4zOTZDOS4wMjcgMjMuMDY2IDkuMDE1IDIyLjEgOS4wMDcgMjEuMTA0QzUuNjcyIDIxLjgyNCA0Ljk2OCAyMC4wMTYgNC45NjggMjAuMDE2QzQuNDIyIDIwLjcxNSAzLjYzNCAyMS4yODcgMi43MjggMjEuODc0QzIuNzI4IDIxLjg3NCAyLjcyOCAyMS44NzQgMi43MjggMjEuODc0Wk0xMiAwIiBmaWxsPSIjMTgxNzE3Ii8+Cjwvc3ZnPgo=",
       bgColor: "bg-gradient-to-br from-gray-700 to-gray-900",
       iconColor: "text-white",
     },
@@ -84,16 +84,16 @@ const Integrations = () => {
           {integrations.map((integration) => (
             <Card key={integration.name} className={`${isMobile ? 'p-4' : 'p-6'} hover:shadow-lg transition-shadow bg-white dark:bg-gray-800 rounded-2xl border shadow-sm`}>
               <div className="flex items-start gap-4 mb-4">
-                <div className={`w-16 h-16 rounded-2xl ${integration.bgColor} flex items-center justify-center shadow-lg`}>
-                  <img 
-                    src={integration.logo} 
-                    alt={`${integration.name} logo`}
-                    className="w-8 h-8 object-contain filter brightness-0 invert"
-                    onError={(e) => {
-                      e.currentTarget.src = "/placeholder.svg";
-                    }}
-                  />
-                </div>
+                 <div className={`w-16 h-16 rounded-2xl ${integration.bgColor} flex items-center justify-center shadow-lg`}>
+                   <img 
+                     src={integration.logo} 
+                     alt={`${integration.name} logo`}
+                     className="w-8 h-8 object-contain"
+                     onError={(e) => {
+                       e.currentTarget.src = "/placeholder.svg";
+                     }}
+                   />
+                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
                     <h3 className={`font-semibold ${isMobile ? 'text-sm' : 'text-base'}`}>{integration.name}</h3>
@@ -118,17 +118,17 @@ const Integrations = () => {
                 {integration.description}
               </p>
               
-              <div className="flex items-center justify-between">
-                <Button
-                  onClick={() => handleAddApi(integration.name)}
-                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl px-4 py-2 text-sm font-medium"
-                >
-                  Add API
-                </Button>
-                <span className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                  {toggleStates[integration.name] ? "Connected" : "Available"}
-                </span>
-              </div>
+               <div className="flex items-center justify-between">
+                 <Button
+                   onClick={() => handleAddApi(integration.name)}
+                   className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6 py-2.5 text-sm font-medium shadow-lg"
+                 >
+                   Add API
+                 </Button>
+                 <span className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                   {toggleStates[integration.name] ? "Connected" : "Available"}
+                 </span>
+               </div>
             </Card>
           ))}
         </div>
@@ -156,7 +156,7 @@ const Integrations = () => {
                 Cancel
               </Button>
               <Button 
-                className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg"
                 onClick={() => {
                   setIsApiModalOpen(false);
                   // Auto-save API key logic would go here
