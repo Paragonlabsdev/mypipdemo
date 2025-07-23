@@ -583,7 +583,7 @@ const AppBuilder = () => {
                       <SelectValue placeholder="Select page" />
                     </SelectTrigger>
                     <SelectContent>
-                      {generatedApp.pages.map((page: any) => (
+                      {generatedApp && generatedApp.pages && generatedApp.pages.map((page: any) => (
                         <SelectItem key={page.name} value={page.name}>
                           {page.name}
                         </SelectItem>
@@ -746,11 +746,12 @@ const AppBuilder = () => {
                           <div className="flex-1 p-4 overflow-y-auto">
                             <div className="space-y-3">
                               {(() => {
+                                if (!generatedApp || !generatedApp.pages) return null;
                                 const currentPageData = generatedApp.pages.find(p => p.name === currentPage);
                                 if (!currentPageData) return null;
                                 
-                                return currentPageData.components.map((componentName: string, index: number) => {
-                                  const component = generatedApp.components[componentName];
+                                return currentPageData.components?.map((componentName: string, index: number) => {
+                                  const component = generatedApp.components?.[componentName];
                                   if (!component) return null;
                                   
                                   switch (component.type) {
@@ -813,7 +814,7 @@ const AppBuilder = () => {
                           {/* Page Navigation */}
                           <div className="border-t bg-gray-50 p-2">
                             <div className="flex justify-center gap-1">
-                              {generatedApp.pages.map((page: any) => (
+                              {generatedApp && generatedApp.pages && generatedApp.pages.map((page: any) => (
                                 <button
                                   key={page.name}
                                   onClick={() => setCurrentPage(page.name)}
