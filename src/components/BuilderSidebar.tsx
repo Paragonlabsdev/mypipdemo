@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Settings, DollarSign, Puzzle, Layers, ChevronLeft, ChevronRight, Zap } from "lucide-react";
+import { Settings, DollarSign, Puzzle, Layers, ChevronLeft, ChevronRight, Zap, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AccountDisplay } from "@/components/AccountDisplay";
@@ -66,6 +66,14 @@ export const BuilderSidebar = ({ promptCount }: BuilderSidebarProps) => {
       </nav>
       
       {!isCollapsed && <AccountDisplay promptCount={promptCount} />}
+      
+      {isCollapsed && (
+        <div className="p-2 border-t border-border flex justify-center">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
+            <User className="h-4 w-4 text-white" />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

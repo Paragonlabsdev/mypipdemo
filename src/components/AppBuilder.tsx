@@ -3,12 +3,15 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useState, useEffect } from "react";
 import { useSearchParams, Outlet, useLocation } from "react-router-dom";
-import { Send, Smartphone, RefreshCw, Paperclip, Share, Monitor, Puzzle, Code2, FileText, Folder, FolderOpen, Menu } from "lucide-react";
+import { Send, Smartphone, RefreshCw, Paperclip, Share, Monitor, Puzzle, Code2, FileText, Folder, FolderOpen, Menu, QrCode, ChevronDown, Apple, PlayCircle, Github, Database, Workflow, Flame } from "lucide-react";
 import { BuilderSidebar } from "@/components/BuilderSidebar";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const AppBuilder = () => {
   const [searchParams] = useSearchParams();
@@ -450,23 +453,139 @@ const AppBuilder = () => {
                   className="text-xs hover:bg-muted"
                   onClick={() => setShowCodeView(!showCodeView)}
                 >
-                  <Code2 className="h-4 w-4 mr-1" />
-                  {showCodeView ? 'Preview' : 'Code'}
+                  <Code2 className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="sm" className="text-xs hover:bg-muted">
-                  <Puzzle className="h-4 w-4 mr-1" />
-                  Integrations
-                </Button>
-                <Button variant="ghost" size="sm" className="text-xs hover:bg-muted">
-                  <Share className="h-4 w-4 mr-1" />
-                  Share
-                </Button>
-                <Button variant="ghost" size="sm" className="text-xs bg-blue-500 text-white hover:bg-blue-600">
-                  <Monitor className="h-4 w-4 mr-1" />
-                  Preview on device
-                </Button>
+                
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="ghost" size="sm" className="text-xs hover:bg-muted">
+                      <Puzzle className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80 p-4" align="end">
+                    <div className="space-y-4">
+                      <h3 className="font-semibold text-sm">Integrations</h3>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/50 cursor-pointer">
+                          <div className="flex items-center gap-3">
+                            <Github className="h-5 w-5" />
+                            <span className="text-sm font-medium">GitHub</span>
+                          </div>
+                          <Button size="sm" variant="outline">Connect</Button>
+                        </div>
+                        <div className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/50 cursor-pointer">
+                          <div className="flex items-center gap-3">
+                            <Database className="h-5 w-5" />
+                            <span className="text-sm font-medium">Supabase</span>
+                          </div>
+                          <Button size="sm" variant="outline">Connect</Button>
+                        </div>
+                        <div className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/50 cursor-pointer">
+                          <div className="flex items-center gap-3">
+                            <Workflow className="h-5 w-5" />
+                            <span className="text-sm font-medium">n8n</span>
+                          </div>
+                          <Button size="sm" variant="outline">Connect</Button>
+                        </div>
+                        <div className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/50 cursor-pointer">
+                          <div className="flex items-center gap-3">
+                            <Flame className="h-5 w-5" />
+                            <span className="text-sm font-medium">Firebase</span>
+                          </div>
+                          <Button size="sm" variant="outline">Connect</Button>
+                        </div>
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="sm" className="text-xs bg-green-500 text-white hover:bg-green-600">
+                      <Apple className="h-4 w-4 mr-1" />
+                      Publish
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Publish App</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 cursor-pointer">
+                        <div className="flex items-center gap-3">
+                          <Apple className="h-6 w-6" />
+                          <div>
+                            <div className="font-medium text-sm">Apple App Store</div>
+                            <div className="text-xs text-muted-foreground">Publish to iOS</div>
+                          </div>
+                        </div>
+                        <Button size="sm">Publish</Button>
+                      </div>
+                      <div className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 cursor-pointer">
+                        <div className="flex items-center gap-3">
+                          <PlayCircle className="h-6 w-6" />
+                          <div>
+                            <div className="font-medium text-sm">Google Play Store</div>
+                            <div className="text-xs text-muted-foreground">Publish to Android</div>
+                          </div>
+                        </div>
+                        <Button size="sm">Publish</Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="ghost" size="sm" className="text-xs bg-blue-500 text-white hover:bg-blue-600">
+                      <Monitor className="h-4 w-4 mr-1" />
+                      Preview on device
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80 p-4" align="end">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <Smartphone className="h-5 w-5" />
+                        <h3 className="font-semibold text-sm">App Clip Preview</h3>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Scan this QR code with your camera app to open the App Clip instantly.
+                      </p>
+                      <div className="flex justify-center">
+                        <img 
+                          src="/lovable-uploads/7c2366f5-f687-427e-a695-2f09dfdea97b.png" 
+                          alt="QR Code"
+                          className="w-32 h-32 rounded-lg"
+                        />
+                      </div>
+                      <p className="text-xs text-center text-muted-foreground">
+                        If you experience any issues, try downloading the full app from the App Store.
+                      </p>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
+
+            {/* Page Selector Above Phone */}
+            {!showCodeView && generatedApp && (
+              <div className="px-8 py-2 bg-background border-b border-border">
+                <div className="flex justify-center">
+                  <Select value={currentPage} onValueChange={setCurrentPage}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Select page" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {generatedApp.pages.map((page: any) => (
+                        <SelectItem key={page.name} value={page.name}>
+                          {page.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
 
             <div className="flex-1 flex items-center justify-center p-8 relative">
               {!showCodeView && (
@@ -588,8 +707,8 @@ const AppBuilder = () => {
                   </div>
                 </div>
               ) : (
-                /* iPhone Frame - smaller size to fit viewport */
-                <div className="relative w-[300px] h-[650px] bg-black rounded-[50px] p-2 shadow-2xl">
+                /* iPhone Frame - bigger size for desktop */
+                <div className="relative w-[380px] h-[780px] bg-black rounded-[50px] p-3 shadow-2xl">
                   {/* iPhone Screen */}
                   <div className="w-full h-full bg-white rounded-[40px] relative overflow-hidden">
                     {/* Dynamic Island */}
