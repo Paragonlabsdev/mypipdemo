@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -7,6 +8,7 @@ import { Send, Smartphone, RefreshCw, Paperclip, Share, Monitor, Puzzle, Code2, 
 import { BuilderSidebar } from "@/components/BuilderSidebar";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { supabase } from "@/integrations/supabase/client";
+import GeneratedAppRenderer from "./GeneratedAppRenderer";
 
 const AppBuilder = () => {
   const [searchParams] = useSearchParams();
@@ -86,6 +88,8 @@ const AppBuilder = () => {
       title: "Your app starts here",
       subtitle: "In just a moment, you'll see your app begin to take shape."
     });
+    setGeneratedApp(null);
+    setCurrentPage("Home");
   };
 
   if (!isBuilderRoot) {
@@ -130,7 +134,7 @@ const AppBuilder = () => {
               
               {isGenerating && (
                 <div className="bg-accent/10 p-3 rounded-lg mr-4">
-                  <p className="text-sm text-accent">🤖 Generating your app...</p>
+                  <p className="text-sm text-accent">🤖 Generating your functional app...</p>
                 </div>
               )}
             </div>
@@ -241,71 +245,31 @@ const AppBuilder = () => {
                     {/* File Tree */}
                     <div className="w-64 bg-muted/20 border-r border-border p-4">
                       <div className="space-y-2 text-sm">
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Folder className="h-4 w-4" />
-                          <span>.git</span>
-                        </div>
                         <div className="flex items-center gap-2">
                           <FolderOpen className="h-4 w-4" />
-                          <span>app</span>
-                        </div>
-                        <div className="ml-6 space-y-1">
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <FileText className="h-4 w-4" />
-                            <span>_layout.tsx</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <FileText className="h-4 w-4" />
-                            <span>index.tsx</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <FolderOpen className="h-4 w-4" />
-                          <span>assets</span>
+                          <span>src</span>
                         </div>
                         <div className="ml-6 space-y-1">
                           <div className="flex items-center gap-2">
                             <FolderOpen className="h-4 w-4" />
-                            <span>fonts</span>
+                            <span>components</span>
                           </div>
-                          <div className="ml-6">
-                            <div className="flex items-center gap-2 text-muted-foreground">
+                          {generatedApp?.components && Object.keys(generatedApp.components).map(comp => (
+                            <div key={comp} className="ml-6 flex items-center gap-2 text-muted-foreground">
                               <FileText className="h-4 w-4" />
-                              <span>SpaceM...</span>
+                              <span>{comp}.tsx</span>
                             </div>
+                          ))}
+                          <div className="flex items-center gap-2">
+                            <FolderOpen className="h-4 w-4" />
+                            <span>pages</span>
                           </div>
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <Folder className="h-4 w-4" />
-                            <span>images</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Folder className="h-4 w-4" />
-                          <span>convex</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <FileText className="h-4 w-4" />
-                          <span>.env.example</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <FileText className="h-4 w-4" />
-                          <span>.gitignore</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <FileText className="h-4 w-4" />
-                          <span>app.json</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <FileText className="h-4 w-4" />
-                          <span>metro.config.js</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <FileText className="h-4 w-4" />
-                          <span>package.json</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <FileText className="h-4 w-4" />
-                          <span>tsconfig.json</span>
+                          {generatedApp?.pages && generatedApp.pages.map(page => (
+                            <div key={page.name} className="ml-6 flex items-center gap-2 text-muted-foreground">
+                              <FileText className="h-4 w-4" />
+                              <span>{page.name}.tsx</span>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>
@@ -319,14 +283,13 @@ const AppBuilder = () => {
                             <pre className="whitespace-pre-wrap">{generatedApp.schema_sql}</pre>
                           </div>
                           <div className="mt-6">
-                            <div className="text-yellow-400 mb-2">-- App Structure</div>
-                            <pre className="whitespace-pre-wrap text-blue-300">
-{JSON.stringify({
-  pages: generatedApp.pages,
-  components: generatedApp.components,
-  api_endpoints: generatedApp.api_endpoints
-}, null, 2)}
-                            </pre>
+                            <div className="text-yellow-400 mb-2">-- Generated Components</div>
+                            {Object.entries(generatedApp.components).map(([name, code]) => (
+                              <div key={name} className="mb-4">
+                                <div className="text-blue-300 mb-2">{name}.tsx</div>
+                                <pre className="whitespace-pre-wrap text-white">{code}</pre>
+                              </div>
+                            ))}
                           </div>
                         </div>
                       ) : (
@@ -342,9 +305,8 @@ const AppBuilder = () => {
                   </div>
                 </div>
               ) : (
-                /* iPhone Frame - smaller size to fit viewport */
+                /* iPhone Frame */
                 <div className="relative w-[300px] h-[650px] bg-black rounded-[50px] p-2 shadow-2xl">
-                  {/* iPhone Screen */}
                   <div className="w-full h-full bg-white rounded-[40px] relative overflow-hidden">
                     {/* Dynamic Island */}
                     <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-24 h-5 bg-black rounded-full"></div>
@@ -370,72 +332,13 @@ const AppBuilder = () => {
                     <div className="absolute top-12 left-0 right-0 bottom-12 flex flex-col overflow-hidden">
                       {generatedApp ? (
                         <>
-                          {/* Page Content */}
+                          {/* Functional App Content */}
                           <div className="flex-1 p-4 overflow-y-auto">
-                            <div className="space-y-3">
-                              {(() => {
-                                const currentPageData = generatedApp.pages.find(p => p.name === currentPage);
-                                if (!currentPageData) return null;
-                                
-                                return currentPageData.components.map((componentName: string, index: number) => {
-                                  const component = generatedApp.components[componentName];
-                                  if (!component) return null;
-                                  
-                                  switch (component.type) {
-                                    case 'card':
-                                      return (
-                                        <div key={index} className="bg-gray-50 p-3 rounded-lg border">
-                                          <h4 className="font-medium text-sm text-black mb-1">
-                                            {component.props?.title || componentName}
-                                          </h4>
-                                          <p className="text-xs text-gray-600">
-                                            {component.props?.description || "Card component"}
-                                          </p>
-                                        </div>
-                                      );
-                                    case 'form':
-                                      return (
-                                        <div key={index} className="bg-white p-3 rounded-lg border shadow-sm">
-                                          <h4 className="font-medium text-sm text-black mb-2">{componentName}</h4>
-                                          {component.fields?.map((field: string, i: number) => (
-                                            <div key={i} className="mb-2">
-                                              <label className="text-xs text-gray-600 capitalize">{field}</label>
-                                              <div className="bg-gray-100 h-6 rounded border mt-1"></div>
-                                            </div>
-                                          ))}
-                                          <div className="bg-blue-500 text-white text-xs py-1 px-2 rounded text-center mt-2">
-                                            {component.props?.submitText || "Submit"}
-                                          </div>
-                                        </div>
-                                      );
-                                    case 'list':
-                                      return (
-                                        <div key={index} className="bg-white rounded-lg border">
-                                          <h4 className="font-medium text-sm text-black p-3 border-b">{componentName}</h4>
-                                          {[1,2,3].map(item => (
-                                            <div key={item} className="p-3 border-b last:border-b-0">
-                                              <div className="text-xs text-gray-800">Sample Item {item}</div>
-                                              <div className="text-xs text-gray-500">Sample description</div>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      );
-                                    case 'button':
-                                      return (
-                                        <div key={index} className="bg-blue-500 text-white text-xs py-2 px-3 rounded text-center">
-                                          {component.props?.text || componentName}
-                                        </div>
-                                      );
-                                    default:
-                                      return (
-                                        <div key={index} className="bg-gray-100 p-2 rounded text-xs text-gray-600">
-                                          {componentName} ({component.type})
-                                        </div>
-                                      );
-                                  }
-                                });
-                              })()}
-                            </div>
+                            <GeneratedAppRenderer 
+                              app={generatedApp}
+                              currentPage={currentPage}
+                              onPageChange={setCurrentPage}
+                            />
                           </div>
                           
                           {/* Page Navigation */}
