@@ -6,10 +6,7 @@ import { useSearchParams, Outlet, useLocation } from "react-router-dom";
 import { Send, Smartphone, RefreshCw, Paperclip, Share, Monitor, Puzzle, Code2, FileText, Folder, FolderOpen } from "lucide-react";
 import { BuilderSidebar } from "@/components/BuilderSidebar";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 
-// Main AppBuilder component
 const AppBuilder = () => {
   const [searchParams] = useSearchParams();
   const location = useLocation();
@@ -23,102 +20,21 @@ const AppBuilder = () => {
   });
   const [showCodeView, setShowCodeView] = useState(false);
   const [promptCount, setPromptCount] = useState(0);
-  const [currentApp, setCurrentApp] = useState<any>(null);
-  const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (inputValue.trim()) {
       setIsGenerating(true);
       setPromptCount(prev => prev + 1);
-      
-      try {
-        // Create app entry
-        const { data: app, error: createError } = await supabase
-          .from('apps')
-          .insert({
-            user_id: crypto.randomUUID(), // Generate a proper UUID
-            name: 'New App',
-            description: inputValue,
-            prompt: inputValue,
-            status: 'planning'
-          })
-          .select()
-          .single();
-
-        if (createError) throw createError;
-
-        setCurrentApp(app);
-        setAppContent({
-          title: "Planning your app...",
-          subtitle: "AI Planner is analyzing your requirements"
-        });
-
-        // Step 1: Planning
-        const planResponse = await supabase.functions.invoke('app-planner', {
-          body: { prompt: inputValue, appId: app.id }
-        });
-
-        if (planResponse.error) throw planResponse.error;
-
-        setAppContent({
-          title: "Designing UI...",
-          subtitle: "AI Designer is creating your app interface"
-        });
-
-        // Step 2: UI Design
-        const uiResponse = await supabase.functions.invoke('ui-composer', {
-          body: { appId: app.id }
-        });
-
-        if (uiResponse.error) throw uiResponse.error;
-
-        setAppContent({
-          title: "Generating code...",
-          subtitle: "AI Developer is writing your React Native code"
-        });
-
-        // Step 3: Code Generation
-        const codeResponse = await supabase.functions.invoke('code-generator', {
-          body: { appId: app.id }
-        });
-
-        if (codeResponse.error) throw codeResponse.error;
-
-        // Get final app data
-        const { data: finalApp } = await supabase
-          .from('apps')
-          .select('*')
-          .eq('id', app.id)
-          .single();
-
-        setCurrentApp(finalApp);
+      // Simulate app generation
+      setTimeout(() => {
         setAppContent({
           title: "App Generated!",
-          subtitle: `Your ${inputValue} React Native app is ready to download.`
+          subtitle: `Your ${inputValue} app is ready to use.`
         });
-
-        toast({
-          title: "Success!",
-          description: "Your React Native app has been generated.",
-        });
-
-      } catch (error) {
-        console.error('Build error:', error);
-        setAppContent({
-          title: "Generation failed",
-          subtitle: "Please try again with a different prompt."
-        });
-        
-        toast({
-          title: "Error",
-          description: "Failed to generate app. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
         setIsGenerating(false);
         setInputValue("");
-      }
+      }, 2000);
     }
   };
 
@@ -345,28 +261,9 @@ const AppBuilder = () => {
                     <div className="flex-1 p-4">
                       <div className="h-full bg-muted/10 rounded border border-dashed border-muted-foreground/30 flex items-center justify-center">
                         <div className="text-center text-muted-foreground">
-                          {currentApp?.code_data ? (
-                            <div className="w-full h-full overflow-auto">
-                              <div className="text-left space-y-4">
-                                {Object.entries(currentApp.code_data.files || {}).map(([path, content]) => (
-                                  <details key={path} className="border rounded p-2">
-                                    <summary className="cursor-pointer font-mono text-sm text-primary">
-                                      {path}
-                                    </summary>
-                                    <pre className="mt-2 text-xs bg-background p-2 rounded border overflow-auto max-h-64">
-                                      {typeof content === 'string' ? content : JSON.stringify(content, null, 2)}
-                                    </pre>
-                                  </details>
-                                ))}
-                              </div>
-                            </div>
-                          ) : (
-                            <>
-                              <Code2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                              <p className="text-lg">No app generated yet</p>
-                              <p className="text-sm">Start building to see your code here</p>
-                            </>
-                          )}
+                          <Code2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                          <p className="text-lg">No app generated yet</p>
+                          <p className="text-sm">Start building to see your code here</p>
                         </div>
                       </div>
                     </div>
@@ -406,14 +303,6 @@ const AppBuilder = () => {
                       </p>
                       {isGenerating && (
                         <div className="w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                      )}
-                      {currentApp?.status === 'completed' && (
-                        <div className="mt-4 space-y-2">
-                          <div className="w-full h-2 bg-gray-200 rounded-full">
-                            <div className="w-full h-2 bg-green-500 rounded-full"></div>
-                          </div>
-                          <p className="text-xs text-green-600">React Native app ready!</p>
-                        </div>
                       )}
                     </div>
 
