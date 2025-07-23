@@ -22,29 +22,13 @@ const GeneratedAppRenderer: React.FC<GeneratedAppRendererProps> = ({
     
     Object.entries(app.components).forEach(([name, code]: [string, any]) => {
       try {
-        // Create a functional component based on the generated code
-        const ComponentFunction = () => {
-          switch (name) {
-            case 'TodoList':
-            case 'ItemList':
-            case 'PostList':
-            case 'CompletedTodos':
-            case 'UserPosts':
-              return (
-                <div className="space-y-2">
-                  <h3 className="text-lg font-semibold mb-4">{name}</h3>
-                  {[1, 2, 3].map(item => (
-                    <div key={item} className="p-3 border rounded-lg">
-                      <h4 className="font-medium">Sample Item {item}</h4>
-                      <p className="text-sm text-muted-foreground">Sample description</p>
-                    </div>
-                  ))}
-                </div>
-              );
-              
-            case 'AddTodoForm':
-            case 'ItemForm':
-            case 'PostForm':
+        // If code is a string (generated React component), create a mock component
+        // In a real implementation, this would be dynamically compiled
+        if (typeof code === 'string') {
+          const ComponentFunction = () => {
+            // Parse the component type from the generated code
+            if (code.includes('useState') && code.includes('form')) {
+              // Form component
               return (
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold mb-4">{name}</h3>
@@ -69,37 +53,67 @@ const GeneratedAppRenderer: React.FC<GeneratedAppRendererProps> = ({
                   </div>
                 </div>
               );
-              
-            case 'WelcomeCard':
-            case 'UserProfile':
+            } else if (code.includes('items.map')) {
+              // List component
+              return (
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold mb-4">{name}</h3>
+                  {[1, 2, 3].map(item => (
+                    <div key={item} className="p-3 border rounded-lg">
+                      <h4 className="font-medium">Sample Item {item}</h4>
+                      <p className="text-sm text-muted-foreground">Sample description for item {item}</p>
+                    </div>
+                  ))}
+                </div>
+              );
+            } else if (code.includes('Card')) {
+              // Card component
               return (
                 <Card className="p-4">
                   <h3 className="text-lg font-semibold mb-2">{name}</h3>
-                  <p className="text-sm text-muted-foreground">Welcome to your app</p>
+                  <p className="text-sm text-muted-foreground">This is a {name} component</p>
                 </Card>
               );
-              
-            case 'CreatePostButton':
-            case 'AddButton':
+            } else if (code.includes('Button')) {
+              // Button component
               return (
                 <Button className="w-full">
-                  {name.includes('Post') ? 'Create New Post' : 'Add Item'}
+                  {name.replace(/([A-Z])/g, ' $1').trim()}
                 </Button>
               );
-              
-            default:
+            } else {
+              // Default component
               return (
                 <div className="p-4 border rounded-lg">
                   <h3 className="text-lg font-semibold">{name}</h3>
-                  <p className="text-sm text-muted-foreground">Functional component</p>
+                  <p className="text-sm text-muted-foreground">Generated functional component</p>
                 </div>
               );
-          }
-        };
-        
-        componentMap[name] = ComponentFunction;
+            }
+          };
+          
+          componentMap[name] = ComponentFunction;
+        } else {
+          // Fallback for old object format
+          const ComponentFunction = () => {
+            return (
+              <div className="p-4 border rounded-lg">
+                <h3 className="text-lg font-semibold">{name}</h3>
+                <p className="text-sm text-muted-foreground">Legacy component format</p>
+              </div>
+            );
+          };
+          
+          componentMap[name] = ComponentFunction;
+        }
       } catch (error) {
         console.error(`Error creating component ${name}:`, error);
+        // Create an error component
+        componentMap[name] = () => (
+          <div className="p-4 border border-red-200 rounded-lg">
+            <p className="text-red-600">Error loading component {name}</p>
+          </div>
+        );
       }
     });
 
