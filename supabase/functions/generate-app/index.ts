@@ -255,81 +255,136 @@ Requirements:
         throw new Error('No valid JSON found in response');
       }
     } catch (parseError) {
-      console.error('Failed to parse Claude response, using fallback:', parseError);
+      console.error('Failed to parse Claude response, using fallback:', parseError.message);
       
-      // Create a smart fallback based on the prompt
+      // Create a robust fallback based on the prompt
       const promptLower = prompt.toLowerCase();
       
-      if (promptLower.includes('todo') || promptLower.includes('task')) {
+      if (promptLower.includes('calorie') || promptLower.includes('food') || promptLower.includes('diet') || promptLower.includes('nutrition')) {
         parsedApp = {
-          schema_sql: `CREATE TABLE IF NOT EXISTS public.todos (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            user_id UUID REFERENCES auth.users NOT NULL,
-            title TEXT NOT NULL,
-            description TEXT,
-            completed BOOLEAN DEFAULT false,
-            created_at TIMESTAMP DEFAULT NOW()
-          );
-          
-          ALTER TABLE public.todos ENABLE ROW LEVEL SECURITY;
-          CREATE POLICY "Users can manage their todos" ON public.todos FOR ALL USING (auth.uid() = user_id);`,
+          schema_sql: `-- Calorie tracking schema
+CREATE TABLE IF NOT EXISTS public.users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT UNIQUE NOT NULL,
+  name TEXT,
+  daily_calorie_goal INTEGER DEFAULT 2000,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.foods (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  calories_per_100g INTEGER NOT NULL,
+  protein DECIMAL,
+  carbs DECIMAL,
+  fat DECIMAL
+);
+
+CREATE TABLE IF NOT EXISTS public.food_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES public.users(id),
+  food_id UUID REFERENCES public.foods(id),
+  quantity_grams INTEGER NOT NULL,
+  logged_at TIMESTAMP DEFAULT NOW()
+);
+
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.food_logs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view own data" ON public.users FOR ALL USING (auth.uid() = id);
+CREATE POLICY "Users can view own logs" ON public.food_logs FOR ALL USING (auth.uid() = user_id);`,
           pages: [
-            { name: "Dashboard", route: "/", components: ["TodoList", "AddTodoForm"] },
+            { name: "Dashboard", route: "/", components: ["CalorieProgress", "TodaysSummary"] },
+            { name: "LogFood", route: "/log", components: ["FoodSearch"] },
+            { name: "History", route: "/history", components: ["FoodHistory"] }
+          ],
+          components: {
+            "CalorieProgress": { type: "card", props: { title: "Daily Calories", description: "Track your progress" } },
+            "TodaysSummary": { type: "list", props: { title: "Today's Nutrients" } },
+            "FoodSearch": { type: "form", fields: ["search_query"], props: { submitText: "Search Foods" } },
+            "FoodHistory": { type: "list", props: { title: "Food History" } }
+          },
+          summary: "A calorie tracking app with food logging and progress tracking"
+        };
+      } else if (promptLower.includes('game') || promptLower.includes('flappy') || promptLower.includes('play')) {
+        parsedApp = {
+          schema_sql: `-- Game schema
+CREATE TABLE IF NOT EXISTS public.players (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  username TEXT UNIQUE NOT NULL,
+  high_score INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.game_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  player_id UUID REFERENCES public.players(id),
+  score INTEGER DEFAULT 0,
+  duration INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+ALTER TABLE public.players ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.game_sessions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Players can view own data" ON public.players FOR ALL USING (auth.uid() = id);
+CREATE POLICY "Players can view own sessions" ON public.game_sessions FOR ALL USING (auth.uid() = player_id);`,
+          pages: [
+            { name: "Menu", route: "/", components: ["GameTitle", "PlayButton"] },
+            { name: "Game", route: "/play", components: ["GameCanvas"] },
+            { name: "Scores", route: "/scores", components: ["HighScores"] }
+          ],
+          components: {
+            "GameTitle": { type: "card", props: { title: "🎮 Game", description: "Tap to play!" } },
+            "PlayButton": { type: "button", props: { text: "Start Game" } },
+            "GameCanvas": { type: "card", props: { title: "Game Area", description: "Game in progress..." } },
+            "HighScores": { type: "list", props: { title: "High Scores" } }
+          },
+          summary: "A game app with scoring and leaderboards"
+        };
+      } else if (promptLower.includes('todo') || promptLower.includes('task')) {
+        parsedApp = {
+          schema_sql: `-- Todo schema
+CREATE TABLE IF NOT EXISTS public.todos (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  completed BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+ALTER TABLE public.todos ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage their todos" ON public.todos FOR ALL USING (auth.uid() = user_id);`,
+          pages: [
+            { name: "Tasks", route: "/", components: ["TodoList", "AddTodoForm"] },
             { name: "Completed", route: "/completed", components: ["CompletedTodos"] }
           ],
           components: {
-            "TodoList": { type: "list", props: { title: "My Todos" } },
-            "AddTodoForm": { type: "form", fields: ["title", "description"], props: { submitText: "Add Todo" } },
+            "TodoList": { type: "list", props: { title: "My Tasks" } },
+            "AddTodoForm": { type: "form", fields: ["title", "description"], props: { submitText: "Add Task" } },
             "CompletedTodos": { type: "list", props: { title: "Completed Tasks" } }
           },
           summary: "A todo list app with task management"
         };
-      } else if (promptLower.includes('blog') || promptLower.includes('post')) {
-        parsedApp = {
-          schema_sql: `CREATE TABLE IF NOT EXISTS public.posts (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            user_id UUID REFERENCES auth.users NOT NULL,
-            title TEXT NOT NULL,
-            content TEXT NOT NULL,
-            published BOOLEAN DEFAULT false,
-            created_at TIMESTAMP DEFAULT NOW()
-          );
-          
-          ALTER TABLE public.posts ENABLE ROW LEVEL SECURITY;
-          CREATE POLICY "Users can manage their posts" ON public.posts FOR ALL USING (auth.uid() = user_id);`,
-          pages: [
-            { name: "Home", route: "/", components: ["PostList", "CreatePostButton"] },
-            { name: "Create", route: "/create", components: ["PostForm"] },
-            { name: "Profile", route: "/profile", components: ["UserProfile", "UserPosts"] }
-          ],
-          components: {
-            "PostList": { type: "list", props: { title: "Latest Posts" } },
-            "CreatePostButton": { type: "button", props: { text: "Create New Post" } },
-            "PostForm": { type: "form", fields: ["title", "content"], props: { submitText: "Publish Post" } },
-            "UserProfile": { type: "card", props: { title: "Profile", description: "User information" } },
-            "UserPosts": { type: "list", props: { title: "My Posts" } }
-          },
-          summary: "A blog platform for creating and sharing posts"
-        };
       } else {
         parsedApp = {
-          schema_sql: `CREATE TABLE IF NOT EXISTS public.items (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            user_id UUID REFERENCES auth.users NOT NULL,
-            name TEXT NOT NULL,
-            description TEXT,
-            created_at TIMESTAMP DEFAULT NOW()
-          );
-          
-          ALTER TABLE public.items ENABLE ROW LEVEL SECURITY;
-          CREATE POLICY "Users can manage their items" ON public.items FOR ALL USING (auth.uid() = user_id);`,
+          schema_sql: `-- Generic app schema
+CREATE TABLE IF NOT EXISTS public.items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users NOT NULL,
+  name TEXT NOT NULL,
+  description TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+ALTER TABLE public.items ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage their items" ON public.items FOR ALL USING (auth.uid() = user_id);`,
           pages: [
-            { name: "Home", route: "/", components: ["ItemList", "WelcomeCard"] },
+            { name: "Home", route: "/", components: ["WelcomeCard", "ItemList"] },
             { name: "Add", route: "/add", components: ["ItemForm"] }
           ],
           components: {
-            "ItemList": { type: "list", props: { title: "My Items" } },
             "WelcomeCard": { type: "card", props: { title: "Welcome", description: "Manage your items" } },
+            "ItemList": { type: "list", props: { title: "My Items" } },
             "ItemForm": { type: "form", fields: ["name", "description"], props: { submitText: "Add Item" } }
           },
           summary: `A ${prompt} management app`

@@ -15,110 +15,133 @@ const GeneratedAppRenderer: React.FC<GeneratedAppRendererProps> = ({
   onPageChange
 }) => {
   const ComponentRenderer = useMemo(() => {
-    // Create a component map from the generated code
     const componentMap: Record<string, React.ComponentType> = {};
     
     if (!app?.components) return componentMap;
     
-    Object.entries(app.components).forEach(([name, code]: [string, any]) => {
+    Object.entries(app.components).forEach(([name, config]: [string, any]) => {
       try {
-        // If code is a string (generated React component), create a mock component
-        // In a real implementation, this would be dynamically compiled
-        if (typeof code === 'string') {
-          const ComponentFunction = () => {
-            // Parse the component type from the generated code
-            if (code.includes('useState') && code.includes('form')) {
-              // Form component
+        // Handle both string (React code) and object (config) formats
+        let componentType = 'card';
+        let props: any = {};
+        
+        if (typeof config === 'string') {
+          // Parse component type from React code string
+          if (config.includes('form') || config.includes('Form')) componentType = 'form';
+          else if (config.includes('list') || config.includes('List')) componentType = 'list';
+          else if (config.includes('Button')) componentType = 'button';
+          else componentType = 'card';
+        } else if (config && typeof config === 'object') {
+          componentType = config.type || 'card';
+          props = config.props || {};
+        }
+
+        const ComponentFunction = () => {
+          switch (componentType) {
+            case 'form':
               return (
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold mb-4">{name}</h3>
+                  <h3 className="text-lg font-semibold mb-4">{props.title || name}</h3>
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-sm font-medium mb-1">Title</label>
+                      <label className="block text-sm font-medium mb-1">Search</label>
                       <input
                         type="text"
                         className="w-full p-2 border rounded-md"
-                        placeholder="Enter title"
+                        placeholder="Enter search term..."
                       />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Description</label>
-                      <textarea
-                        className="w-full p-2 border rounded-md"
-                        placeholder="Enter description"
-                        rows={3}
-                      />
-                    </div>
-                    <Button className="w-full">Submit</Button>
+                    <Button className="w-full">{props.submitText || 'Submit'}</Button>
                   </div>
                 </div>
               );
-            } else if (code.includes('items.map')) {
-              // List component
+
+            case 'list':
+              const sampleData = name.toLowerCase().includes('food') ? [
+                { id: 1, name: 'Apple', calories: '52 cal/100g' },
+                { id: 2, name: 'Banana', calories: '89 cal/100g' },
+                { id: 3, name: 'Chicken Breast', calories: '165 cal/100g' }
+              ] : name.toLowerCase().includes('game') || name.toLowerCase().includes('score') ? [
+                { id: 1, name: 'Player1', score: '1250' },
+                { id: 2, name: 'Player2', score: '980' },
+                { id: 3, name: 'Player3', score: '750' }
+              ] : [
+                { id: 1, name: 'Task 1', status: 'Pending' },
+                { id: 2, name: 'Task 2', status: 'Complete' },
+                { id: 3, name: 'Task 3', status: 'In Progress' }
+              ];
+
               return (
-                <div className="space-y-2">
-                  <h3 className="text-lg font-semibold mb-4">{name}</h3>
-                  {[1, 2, 3].map(item => (
-                    <div key={item} className="p-3 border rounded-lg">
-                      <h4 className="font-medium">Sample Item {item}</h4>
-                      <p className="text-sm text-muted-foreground">Sample description for item {item}</p>
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold mb-4">{props.title || name}</h3>
+                  {sampleData.map(item => (
+                    <div key={item.id} className="p-3 border rounded-lg flex justify-between items-center">
+                      <div>
+                        <h4 className="font-medium">{item.name}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {item.calories || item.score || item.status}
+                        </p>
+                      </div>
+                      {name.toLowerCase().includes('calorie') && (
+                        <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                          Log
+                        </span>
+                      )}
                     </div>
                   ))}
                 </div>
               );
-            } else if (code.includes('Card')) {
-              // Card component
+
+            case 'button':
               return (
-                <Card className="p-4">
-                  <h3 className="text-lg font-semibold mb-2">{name}</h3>
-                  <p className="text-sm text-muted-foreground">This is a {name} component</p>
-                </Card>
-              );
-            } else if (code.includes('Button')) {
-              // Button component
-              return (
-                <Button className="w-full">
-                  {name.replace(/([A-Z])/g, ' $1').trim()}
+                <Button className="w-full" size="lg">
+                  {props.text || name.replace(/([A-Z])/g, ' $1').trim()}
                 </Button>
               );
-            } else {
-              // Default component
+
+            case 'card':
+            default:
               return (
-                <div className="p-4 border rounded-lg">
-                  <h3 className="text-lg font-semibold">{name}</h3>
-                  <p className="text-sm text-muted-foreground">Generated functional component</p>
-                </div>
+                <Card className="p-4">
+                  <h3 className="text-lg font-semibold mb-2">{props.title || name}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {props.description || `This is the ${name} component`}
+                  </p>
+                  {name.toLowerCase().includes('progress') && (
+                    <div className="mt-4">
+                      <div className="flex justify-between text-sm mb-2">
+                        <span>1,200 calories</span>
+                        <span>2,000 goal</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-blue-600 h-2 rounded-full" style={{ width: '60%' }}></div>
+                      </div>
+                    </div>
+                  )}
+                  {name.toLowerCase().includes('game') && (
+                    <div className="mt-4 text-center">
+                      <div className="text-4xl mb-2">🎮</div>
+                      <p className="text-xs text-muted-foreground">Tap to start playing!</p>
+                    </div>
+                  )}
+                </Card>
               );
-            }
-          };
-          
-          componentMap[name] = ComponentFunction;
-        } else {
-          // Fallback for old object format
-          const ComponentFunction = () => {
-            return (
-              <div className="p-4 border rounded-lg">
-                <h3 className="text-lg font-semibold">{name}</h3>
-                <p className="text-sm text-muted-foreground">Legacy component format</p>
-              </div>
-            );
-          };
-          
-          componentMap[name] = ComponentFunction;
-        }
+          }
+        };
+        
+        componentMap[name] = ComponentFunction;
       } catch (error) {
         console.error(`Error creating component ${name}:`, error);
-        // Create an error component
         componentMap[name] = () => (
           <div className="p-4 border border-red-200 rounded-lg">
-            <p className="text-red-600">Error loading component {name}</p>
+            <p className="text-red-600">Error loading {name}</p>
           </div>
         );
       }
     });
 
     return componentMap;
-  }, [app.components]);
+  }, [app?.components]);
 
   // Add null checks for app structure
   if (!app || !app.pages || !Array.isArray(app.pages)) {
