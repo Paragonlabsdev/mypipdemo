@@ -81,15 +81,26 @@ Return a complete HTML document that looks professional and modern, not just tex
     const data = await response.json();
     let generatedCode = data.content[0].text;
 
-    // Extract only the HTML code, removing descriptions
-    const htmlMatch = generatedCode.match(/```html\s*([\s\S]*?)\s*```/);
+    // Extract only the HTML code, removing all descriptions and explanations
+    let htmlMatch = generatedCode.match(/```html\s*([\s\S]*?)\s*```/);
     if (htmlMatch) {
       generatedCode = htmlMatch[1].trim();
     } else {
-      // If no code blocks found, try to extract HTML document
-      const docMatch = generatedCode.match(/<!DOCTYPE html>[\s\S]*<\/html>/i);
-      if (docMatch) {
-        generatedCode = docMatch[0];
+      // Try to find HTML without code blocks
+      htmlMatch = generatedCode.match(/<!DOCTYPE html>[\s\S]*?<\/html>/i);
+      if (htmlMatch) {
+        generatedCode = htmlMatch[0];
+      } else {
+        // If still no match, look for just the html tag
+        htmlMatch = generatedCode.match(/<html[\s\S]*?<\/html>/i);
+        if (htmlMatch) {
+          generatedCode = `<!DOCTYPE html>\n${htmlMatch[0]}`;
+        } else {
+          // Last resort: remove everything before and after HTML content
+          generatedCode = generatedCode
+            .replace(/^[\s\S]*?(?=<!DOCTYPE html>|<html)/i, '')
+            .replace(/(?<=<\/html>)[\s\S]*$/i, '');
+        }
       }
     }
 
