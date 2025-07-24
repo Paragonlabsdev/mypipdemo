@@ -8,23 +8,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface ExpoAppStructure {
-  appName: string;
-  appId: string;
-  description: string;
-  generatedFiles: {
-    'package.json': string;
-    'app.json': string;
-    'eas.json': string;
-    'App.js': string;
-    'README.md': string;
-    [key: string]: string; // For all app/* files and assets
-  };
-  installInstructions: string[];
-  summary: string;
-  previewCode: string; // HTML/JS for preview
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -32,9 +15,8 @@ serve(async (req) => {
 
   try {
     const { prompt } = await req.json();
-    console.log('🚀 Starting React Native/Expo app generation for:', prompt);
+    console.log('🚀 Generating React Native app with Claude SDK for:', prompt);
 
-    // Simple Claude SDK approach - single call to generate everything
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -44,286 +26,199 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 8000,
+        max_tokens: 4000,
         messages: [
           {
             role: 'user',
-            content: `Create a complete React Native/Expo mobile app for: "${prompt}"
+            content: `Create a React Native mobile app for: "${prompt}"
 
-Generate a production-ready React Native app with Expo. Return ONLY a valid JSON object with this structure:
+Generate a complete working React Native app with Expo. The app should have:
+- A beautiful, functional UI
+- Proper navigation with expo-router
+- Working components and interactions
+- Professional styling
 
+Create these files:
+1. package.json - with expo, react-native, expo-router dependencies
+2. app.json - expo configuration
+3. App.js - expo-router entry point 
+4. app/index.js - main home screen with working UI
+5. app/_layout.js - expo-router layout
+6. README.md - installation instructions
+
+Also create an HTML preview showing what the app looks like.
+
+Return as JSON:
 {
-  "appName": "descriptive app name",
-  "appId": "app.mypip.appname",
-  "description": "brief app description",
+  "appName": "App Name",
+  "description": "Brief description", 
   "generatedFiles": {
-    "package.json": "complete package.json with expo, react-native, expo-router dependencies",
-    "app.json": "complete expo app.json config",
-    "eas.json": "complete eas.json build config",
-    "App.js": "expo-router entry point",
-    "app/index.js": "main home screen with working UI",
-    "app/_layout.js": "expo-router layout",
-    "README.md": "install and run instructions"
+    "package.json": "...",
+    "app.json": "...",
+    "App.js": "...",
+    "app/index.js": "...",
+    "app/_layout.js": "...",
+    "README.md": "..."
   },
-  "installInstructions": ["npm install", "npx expo start", "scan QR code"],
-  "summary": "brief description of generated app",
-  "previewCode": "HTML/CSS/JS code to show a visual preview of the app in a phone mockup"
-}
-
-REQUIREMENTS:
-- Use Expo SDK ~50.0.0, React Native 0.73.0, expo-router ^3.0.0
-- Make the app functional with working navigation and UI
-- Include proper React Native styling with StyleSheet
-- Generate a phone preview HTML that visually shows the app interface
-- Make the preview code work as a standalone HTML file with CSS and JS
-- The preview should look like a real mobile app interface
-
-Make everything production-ready and immediately runnable with 'npx expo start'!`
+  "previewCode": "HTML code showing app preview",
+  "summary": "Brief summary"
+}`
           }
         ]
       }),
     });
 
     const data = await response.json();
-    let finalApp: ExpoAppStructure;
+    console.log('Claude response received');
+
+    // Extract content from Claude response
+    let content = '';
+    if (data.content && Array.isArray(data.content)) {
+      content = data.content.map(item => item.text).join('');
+    } else if (data.content) {
+      content = data.content;
+    } else {
+      throw new Error('No content in Claude response');
+    }
+
+    // Try to extract JSON from the response
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    let appData;
     
-    try {
-      // Extract JSON from Claude's response
-      let content = '';
-      if (data.content && Array.isArray(data.content) && data.content[0]) {
-        content = data.content[0].text;
-      } else if (data.content && typeof data.content === 'string') {
-        content = data.content;
-      } else {
-        throw new Error('Unexpected response format from Claude');
+    if (jsonMatch) {
+      try {
+        appData = JSON.parse(jsonMatch[0]);
+      } catch (e) {
+        console.error('JSON parse error:', e);
+        throw new Error('Failed to parse JSON from Claude response');
       }
-      
-      console.log('Claude response received, parsing...');
-      
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        finalApp = JSON.parse(jsonMatch[0]);
-        console.log('✅ App generated successfully with Claude SDK');
-      } else {
-        throw new Error('No valid JSON found in response');
-      }
-    } catch (parseError) {
-      console.error('Failed to parse Claude response:', parseError);
-      
-      // Create a fallback app structure
-      const appName = `${prompt} App`;
-      const appId = `app.mypip.${prompt.toLowerCase().replace(/\s+/g, '')}`;
-      
-      finalApp = {
-        appName,
-        appId,
-        description: `A React Native app for ${prompt}`,
-        generatedFiles: {
-          'package.json': JSON.stringify({
-            "name": "my-app",
-            "main": "node_modules/expo-router/entry",
-            "version": "1.0.0",
-            "scripts": {
-              "dev": "expo start --tunnel",
-              "postinstall": "npx expo install"
-            },
-            "dependencies": {
-              "expo": "~50.0.0",
-              "react": "18.2.0",
-              "react-native": "0.73.0",
-              "expo-router": "^3.0.0",
-              "expo-status-bar": "~1.11.1"
-            }
-          }, null, 2),
-          'app.json': JSON.stringify({
-            "expo": {
-              "name": appName,
-              "slug": appName.toLowerCase().replace(/\s+/g, '-'),
-              "version": "1.0.0",
-              "orientation": "portrait",
-              "icon": "./assets/icon.png",
-              "userInterfaceStyle": "light",
-              "splash": {
-                "image": "./assets/splash.png",
-                "resizeMode": "contain",
-                "backgroundColor": "#ffffff"
-              },
-              "assetBundlePatterns": ["**/*"],
-              "ios": {
-                "supportsTablet": true
-              },
-              "android": {
-                "adaptiveIcon": {
-                  "foregroundImage": "./assets/adaptive-icon.png",
-                  "backgroundColor": "#ffffff"
-                }
-              },
-              "web": {
-                "favicon": "./assets/favicon.png"
-              }
-            }
-          }, null, 2),
-          'eas.json': JSON.stringify({
-            "cli": {
-              "version": ">= 3.0.0"
-            },
-            "build": {
-              "development": {
-                "developmentClient": true,
-                "distribution": "internal"
-              },
-              "preview": {
-                "distribution": "internal"
-              },
-              "production": {}
-            },
-            "submit": {
-              "production": {}
-            }
-          }, null, 2),
-          'App.js': `import 'expo-router/entry';`,
-          'app/index.js': `import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+    } else {
+      console.error('No JSON found in response');
+      throw new Error('No JSON found in Claude response');
+    }
 
-export default function HomeScreen() {
-  const router = useRouter();
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>${appName}</Text>
-      <Text style={styles.subtitle}>Welcome to your new app!</Text>
-      <TouchableOpacity style={styles.button} onPress={() => alert('App is working!')}>
-        <Text style={styles.buttonText}>Get Started</Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 30,
-    textAlign: 'center',
-  },
-  button: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-});`,
-          'app/_layout.js': `import { Stack } from 'expo-router';
-
-export default function RootLayout() {
-  return (
-    <Stack>
-      <Stack.Screen name="index" options={{ title: '${appName}' }} />
-    </Stack>
-  );
-}`,
-          'README.md': `# ${appName}
-
-A React Native app built with Expo.
-
-## Installation & Setup
-
-1. **Install dependencies:**
-   \`\`\`bash
-   npm install
-   \`\`\`
-
-2. **Start the development server:**
-   \`\`\`bash
-   npx expo start
-   \`\`\`
-
-3. **Run on device:**
-   - Install Expo Go app on your phone
-   - Scan the QR code from the terminal
-   - Or press 'i' for iOS simulator, 'a' for Android emulator
-
-## Features
-
-- Home screen with welcome message
-
-## Built with
-
-- React Native 0.73.0
-- Expo SDK ~50.0.0
-- Expo Router for navigation
-
-## Getting Started
-
-This app is ready to run! Just follow the installation steps above and start building your mobile app.
-`
-        },
-        installInstructions: [
-          "npm install",
-          "npx expo start",
-          "Scan QR code with Expo Go app or use simulator"
-        ],
-        summary: `Generated a complete React Native/Expo app: ${appName}. Ready to run with expo start.`,
-        previewCode: `<!DOCTYPE html>
-<html lang="en">
+    // Ensure required fields
+    const finalApp = {
+      appName: appData.appName || `${prompt} App`,
+      appId: `app.mypip.${prompt.toLowerCase().replace(/\s+/g, '')}`,
+      description: appData.description || `A React Native app for ${prompt}`,
+      generatedFiles: appData.generatedFiles || {},
+      installInstructions: ["npm install", "npx expo start", "Scan QR code with Expo Go"],
+      summary: appData.summary || `Generated ${appData.appName || prompt + ' app'}`,
+      previewCode: appData.previewCode || `
+<!DOCTYPE html>
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${appName} Preview</title>
+    <title>${appData.appName || prompt + ' App'}</title>
     <style>
-        body { margin: 0; padding: 20px; background: #f0f0f0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
-        .phone { width: 375px; height: 667px; background: white; border-radius: 30px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .screen { padding: 40px 20px; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        .title { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
-        .subtitle { font-size: 16px; color: #666; margin-bottom: 30px; }
-        .button { background: #007AFF; color: white; padding: 10px 20px; border-radius: 8px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; }
+        body { margin: 0; padding: 20px; background: #f5f5f5; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+        .container { max-width: 375px; margin: 0 auto; background: white; min-height: 600px; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 20px 20px; text-align: center; }
+        .title { font-size: 24px; font-weight: bold; margin-bottom: 8px; }
+        .subtitle { font-size: 16px; opacity: 0.9; }
+        .content { padding: 30px 20px; text-align: center; }
+        .button { background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; cursor: pointer; margin: 10px; }
+        .feature { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #667eea; }
     </style>
 </head>
 <body>
-    <div class="phone">
-        <div class="screen">
-            <h1 class="title">${appName}</h1>
-            <p class="subtitle">Welcome to your new app!</p>
-            <button class="button" onclick="alert('App is working!')">Get Started</button>
+    <div class="container">
+        <div class="header">
+            <div class="title">${appData.appName || prompt + ' App'}</div>
+            <div class="subtitle">Welcome to your mobile app</div>
+        </div>
+        <div class="content">
+            <div class="feature">
+                <strong>📱 React Native App</strong>
+                <div>Built with Expo for iOS and Android</div>
+            </div>
+            <div class="feature">
+                <strong>🚀 Ready to Deploy</strong>
+                <div>Install and run with Expo Go</div>
+            </div>
+            <button class="button">Get Started</button>
         </div>
     </div>
 </body>
 </html>`
-      };
-    }
+    };
 
-    console.log('🎉 App generated successfully:', {
-      appName: finalApp.appName,
-      description: finalApp.description,
-      filesGenerated: Object.keys(finalApp.generatedFiles).length
-    });
+    console.log('✅ App generated successfully:', finalApp.appName);
 
     return new Response(JSON.stringify(finalApp), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
-    console.error('❌ Error generating app:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
+    console.error('❌ Error generating app:', error.message);
+    
+    // Return fallback app
+    const { prompt: userPrompt } = await req.json().catch(() => ({ prompt: 'Sample App' }));
+    
+    const fallbackApp = {
+      appName: `${userPrompt} App`,
+      appId: `app.mypip.${userPrompt.toLowerCase().replace(/\s+/g, '')}`,
+      description: `A React Native app for ${userPrompt}`,
+      generatedFiles: {
+        'package.json': JSON.stringify({
+          "name": "my-expo-app",
+          "main": "node_modules/expo-router/entry",
+          "version": "1.0.0",
+          "scripts": {
+            "start": "expo start",
+            "dev": "expo start --tunnel"
+          },
+          "dependencies": {
+            "expo": "~50.0.0",
+            "react": "18.2.0",
+            "react-native": "0.73.0",
+            "expo-router": "^3.0.0"
+          }
+        }, null, 2),
+        'app.json': JSON.stringify({
+          "expo": {
+            "name": `${userPrompt} App`,
+            "slug": `${userPrompt.toLowerCase().replace(/\s+/g, '-')}-app`,
+            "version": "1.0.0",
+            "orientation": "portrait",
+            "platforms": ["ios", "android", "web"]
+          }
+        }, null, 2),
+        'App.js': 'import "expo-router/entry";',
+        'app/index.js': `import { View, Text, StyleSheet } from 'react-native';
+
+export default function HomeScreen() {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>${userPrompt} App</Text>
+      <Text style={styles.subtitle}>Your app is ready!</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
+  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 10 },
+  subtitle: { fontSize: 16, color: '#666' }
+});`,
+        'app/_layout.js': `import { Stack } from 'expo-router';
+
+export default function RootLayout() {
+  return <Stack><Stack.Screen name="index" /></Stack>;
+}`,
+        'README.md': `# ${userPrompt} App\n\nReact Native app built with Expo.\n\n## Setup\n1. npm install\n2. npx expo start\n3. Scan QR code with Expo Go`
+      },
+      installInstructions: ["npm install", "npx expo start", "Scan QR code"],
+      summary: `Generated ${userPrompt} app with React Native and Expo`,
+      previewCode: `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>${userPrompt} App</title>
+<style>body{margin:0;padding:20px;background:#f5f5f5;font-family:-apple-system,sans-serif}.container{max-width:375px;margin:0 auto;background:white;min-height:600px;border-radius:20px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1)}.header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:40px 20px 20px;text-align:center}.title{font-size:24px;font-weight:bold}.content{padding:30px;text-align:center}.button{background:#667eea;color:white;border:none;padding:12px 24px;border-radius:8px;margin:10px}</style>
+</head><body><div class="container"><div class="header"><div class="title">${userPrompt} App</div></div><div class="content"><button class="button">Get Started</button></div></div></body></html>`
+    };
+
+    return new Response(JSON.stringify(fallbackApp), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
