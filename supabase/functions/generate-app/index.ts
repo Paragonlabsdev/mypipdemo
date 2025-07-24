@@ -6,7 +6,75 @@ const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Content-Security-Policy': 'default-src \'self\'; script-src \'self\' \'unsafe-inline\'; style-src \'self\' \'unsafe-inline\';',
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'SAMEORIGIN',
+  'X-XSS-Protection': '1; mode=block'
 };
+
+// Rate limiting
+const rateLimitMap = new Map();
+const RATE_LIMIT_WINDOW = 60000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 10; // Max 10 requests per minute per IP
+
+// Input validation
+function validateAndSanitizePrompt(prompt: string): string {
+  if (!prompt || typeof prompt !== 'string') {
+    throw new Error('Invalid prompt: must be a non-empty string');
+  }
+  
+  // Length validation
+  if (prompt.length > 500) {
+    throw new Error('Prompt too long: maximum 500 characters allowed');
+  }
+  
+  // Remove potentially dangerous patterns
+  const dangerous = [
+    /<script/i, /<\/script/i, /javascript:/i, /vbscript:/i, /on\w+=/i,
+    /data:text\/html/i, /eval\(/i, /Function\(/i, /window\./i, /document\./i
+  ];
+  
+  for (const pattern of dangerous) {
+    if (pattern.test(prompt)) {
+      throw new Error('Prompt contains potentially unsafe content');
+    }
+  }
+  
+  // Basic sanitization
+  return prompt
+    .replace(/[<>]/g, '') // Remove angle brackets
+    .replace(/["']/g, '') // Remove quotes
+    .trim();
+}
+
+// HTML sanitization for preview code
+function sanitizeHtml(html: string): string {
+  if (!html || typeof html !== 'string') return '';
+  
+  // Remove script tags and dangerous attributes
+  return html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
+    .replace(/javascript:/gi, '')
+    .replace(/vbscript:/gi, '')
+    .replace(/data:text\/html/gi, 'data:text/plain');
+}
+
+function checkRateLimit(clientIP: string): void {
+  const now = Date.now();
+  const clientRequests = rateLimitMap.get(clientIP) || [];
+  
+  // Remove old requests outside the window
+  const recentRequests = clientRequests.filter((time: number) => now - time < RATE_LIMIT_WINDOW);
+  
+  if (recentRequests.length >= RATE_LIMIT_MAX_REQUESTS) {
+    throw new Error('Rate limit exceeded. Please try again later.');
+  }
+  
+  recentRequests.push(now);
+  rateLimitMap.set(clientIP, recentRequests);
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -14,8 +82,21 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt } = await req.json();
-    console.log('🚀 Generating React Native app with Claude SDK for:', prompt);
+    // Get client IP for rate limiting
+    const clientIP = req.headers.get('cf-connecting-ip') || 
+                    req.headers.get('x-forwarded-for') || 
+                    req.headers.get('x-real-ip') || 
+                    'unknown';
+    
+    // Check rate limit
+    checkRateLimit(clientIP);
+    
+    const body = await req.json();
+    const { prompt } = body;
+    
+    // Validate and sanitize input
+    const sanitizedPrompt = validateAndSanitizePrompt(prompt);
+    console.log('🚀 Generating React Native app with Claude SDK for:', sanitizedPrompt);
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -30,7 +111,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'user',
-            content: `Create a React Native mobile app for: "${prompt}"
+            content: `Create a React Native mobile app for: "${sanitizedPrompt}"
 
 Generate a complete working React Native app with Expo. The app should have:
 - A beautiful, functional UI
@@ -97,15 +178,15 @@ Return as JSON:
       throw new Error('No JSON found in Claude response');
     }
 
-    // Ensure required fields
+    // Ensure required fields and sanitize output
     const finalApp = {
-      appName: appData.appName || `${prompt} App`,
-      appId: `app.mypip.${prompt.toLowerCase().replace(/\s+/g, '')}`,
-      description: appData.description || `A React Native app for ${prompt}`,
+      appName: appData.appName || `${sanitizedPrompt} App`,
+      appId: `app.mypip.${sanitizedPrompt.toLowerCase().replace(/\s+/g, '')}`,
+      description: appData.description || `A React Native app for ${sanitizedPrompt}`,
       generatedFiles: appData.generatedFiles || {},
       installInstructions: ["npm install", "npx expo start", "Scan QR code with Expo Go"],
-      summary: appData.summary || `Generated ${appData.appName || prompt + ' app'}`,
-      previewCode: appData.previewCode || `
+      summary: appData.summary || `Generated ${appData.appName || sanitizedPrompt + ' app'}`,
+      previewCode: sanitizeHtml(appData.previewCode) || `
 <!DOCTYPE html>
 <html>
 <head>
@@ -119,14 +200,14 @@ Return as JSON:
         .title { font-size: 24px; font-weight: bold; margin-bottom: 8px; }
         .subtitle { font-size: 16px; opacity: 0.9; }
         .content { padding: 30px 20px; text-align: center; }
-        .button { background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; cursor: pointer; margin: 10px; }
+        .button { background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; margin: 10px; }
         .feature { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #667eea; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="title">${appData.appName || prompt + ' App'}</div>
+            <div class="title">${appData.appName || sanitizedPrompt + ' App'}</div>
             <div class="subtitle">Welcome to your mobile app</div>
         </div>
         <div class="content">
@@ -138,7 +219,7 @@ Return as JSON:
                 <strong>🚀 Ready to Deploy</strong>
                 <div>Install and run with Expo Go</div>
             </div>
-            <button class="button">Get Started</button>
+            <div class="button">Get Started</div>
         </div>
     </div>
 </body>
@@ -154,8 +235,23 @@ Return as JSON:
   } catch (error) {
     console.error('❌ Error generating app:', error.message);
     
-    // Return fallback app
-    const { prompt: userPrompt } = await req.json().catch(() => ({ prompt: 'Sample App' }));
+    // Return appropriate error response based on error type
+    if (error.message.includes('Rate limit exceeded')) {
+      return new Response(JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    
+    if (error.message.includes('Invalid prompt') || error.message.includes('unsafe content')) {
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    
+    // Return fallback app for other errors
+    const userPrompt = 'Sample App'; // Use safe fallback instead of parsing again
     
     const fallbackApp = {
       appName: `${userPrompt} App`,

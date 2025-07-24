@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { PreviewDeviceModal } from "@/components/PreviewDeviceModal";
 import { AccountModal } from "@/components/AccountModal";
+import { validateInput, createSecureIframeProps } from "@/lib/security";
 
 const AppBuilder = () => {
   const [searchParams] = useSearchParams();
@@ -43,16 +44,79 @@ const AppBuilder = () => {
   useEffect(() => {
     if (initialPrompt && !isGenerating && promptCount === 0) {
       const generateFromInitialPrompt = async () => {
-        setIsGenerating(true);
-        setPromptCount(1);
+        try {
+          // Validate initial prompt
+          const validatedPrompt = validateInput(initialPrompt.trim());
+          
+          setIsGenerating(true);
+          setPromptCount(1);
+          
+          // Add initial prompt to chat history
+          setChatHistory([{ type: 'user', content: validatedPrompt }]);
+
+          // Call the AI app generator
+          const { data, error } = await supabase.functions.invoke('generate-app', {
+            body: { prompt: validatedPrompt }
+          });
+
+          if (error) {
+            console.error('Error generating app:', error);
+            setChatHistory(prev => [...prev, { 
+              type: 'assistant', 
+              content: `Error generating app: ${error.message}` 
+            }]);
+            setAppContent({
+              title: "Generation failed",
+              subtitle: "Please try again with a different prompt."
+            });
+          } else {
+            // Successfully generated React Native app
+            setGeneratedApp(data);
+            setChatHistory(prev => [...prev, { 
+              type: 'assistant', 
+              content: `🎉 Generated your React Native app: ${data.appName}! ${data.summary}\n\n📱 Ready to run with:\n• npm install\n• npx expo start\n• Scan QR code or use simulator` 
+            }]);
+            setAppContent({
+              title: data.appName || "Your React Native App",
+              subtitle: data.summary || "React Native app generated successfully!"
+            });
+          }
+        } catch (err) {
+          console.error('Failed to generate app:', err);
+          setChatHistory([{ 
+            type: 'assistant', 
+            content: "Failed to generate app. Please check your connection and try again." 
+          }]);
+          setAppContent({
+            title: "Connection failed",
+            subtitle: "Please check your connection and try again."
+          });
+          setIsGenerating(false);
+        }
+      };
+
+      generateFromInitialPrompt();
+    }
+  }, [initialPrompt]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputValue.trim()) {
+      try {
+        // Validate input before processing
+        const validatedInput = validateInput(inputValue.trim());
         
-        // Add initial prompt to chat history
-        setChatHistory([{ type: 'user', content: initialPrompt }]);
+        setIsGenerating(true);
+        setPromptCount(prev => prev + 1);
+        
+        // Add user message to chat
+        setChatHistory(prev => [...prev, { type: 'user', content: validatedInput }]);
+        setInputValue("");
 
         try {
           // Call the AI app generator
           const { data, error } = await supabase.functions.invoke('generate-app', {
-            body: { prompt: initialPrompt }
+            body: { prompt: validatedInput }
           });
 
           if (error) {
@@ -90,64 +154,14 @@ const AppBuilder = () => {
         }
 
         setIsGenerating(false);
-      };
-
-      generateFromInitialPrompt();
-    }
-  }, [initialPrompt]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (inputValue.trim()) {
-      setIsGenerating(true);
-      setPromptCount(prev => prev + 1);
-      
-      // Add user message to chat
-      const userMessage = inputValue;
-      setChatHistory(prev => [...prev, { type: 'user', content: userMessage }]);
-      setInputValue("");
-
-      try {
-        // Call the AI app generator
-        const { data, error } = await supabase.functions.invoke('generate-app', {
-          body: { prompt: userMessage }
-        });
-
-        if (error) {
-          console.error('Error generating app:', error);
-          setChatHistory(prev => [...prev, { 
-            type: 'assistant', 
-            content: `Error generating app: ${error.message}` 
-          }]);
-          setAppContent({
-            title: "Generation failed",
-            subtitle: "Please try again with a different prompt."
-          });
-        } else {
-          // Successfully generated React Native app
-          setGeneratedApp(data);
-          setChatHistory(prev => [...prev, { 
-            type: 'assistant', 
-            content: `🎉 Generated your React Native app: ${data.appName}! ${data.summary}\n\n📱 Ready to run with:\n• npm install\n• npx expo start\n• Scan QR code or use simulator` 
-          }]);
-          setAppContent({
-            title: data.appName || "Your React Native App",
-            subtitle: data.summary || "React Native app generated successfully!"
-          });
-        }
-      } catch (err) {
-        console.error('Failed to generate app:', err);
+      } catch (validationError: any) {
+        // Handle validation errors
         setChatHistory(prev => [...prev, { 
           type: 'assistant', 
-          content: "Failed to generate app. Please check your connection and try again." 
+          content: `Input validation failed: ${validationError.message}` 
         }]);
-        setAppContent({
-          title: "Connection failed",
-          subtitle: "Please check your connection and try again."
-        });
+        setIsGenerating(false);
       }
-
-      setIsGenerating(false);
     }
   };
 
@@ -263,10 +277,7 @@ const AppBuilder = () => {
                        <div className="absolute top-10 left-0 right-0 bottom-8 flex flex-col overflow-hidden">
                          {generatedApp && generatedApp.previewCode ? (
                            <iframe
-                             srcDoc={generatedApp.previewCode}
-                             className="w-full h-full border-0"
-                             title="App Preview"
-                             style={{ background: 'white' }}
+                             {...createSecureIframeProps(generatedApp.previewCode)}
                            />
                          ) : generatedApp ? (
                            <div className="flex-1 p-3 overflow-y-auto">
