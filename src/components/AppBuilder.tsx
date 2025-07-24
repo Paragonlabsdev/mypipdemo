@@ -6,16 +6,14 @@ import { useSearchParams, Outlet, useLocation } from "react-router-dom";
 import { Send, Smartphone, RefreshCw, Paperclip, Share, Monitor, Puzzle, Code2, FileText, Folder, FolderOpen, Menu, QrCode, ChevronDown, Apple, PlayCircle, Github, Database, Workflow, Flame, User } from "lucide-react";
 import { BuilderSidebar } from "@/components/BuilderSidebar";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { PreviewDeviceModal } from "@/components/PreviewDeviceModal";
 import { AccountModal } from "@/components/AccountModal";
-import { validateInput, createSecureIframeProps } from "@/lib/security";
+import { validateInput } from "@/lib/security";
 
 const AppBuilder = () => {
   const [searchParams] = useSearchParams();
@@ -23,15 +21,7 @@ const AppBuilder = () => {
   const isBuilderRoot = location.pathname === "/builder";
   const initialPrompt = searchParams.get("prompt") || "";
   const [inputValue, setInputValue] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [appContent, setAppContent] = useState({
-    title: "Your app starts here",
-    subtitle: "In just a moment, you'll see your app begin to take shape."
-  });
-  const [showCodeView, setShowCodeView] = useState(false);
   const [promptCount, setPromptCount] = useState(0);
-  const [generatedApp, setGeneratedApp] = useState<any>(null);
-  const [currentPage, setCurrentPage] = useState("Home");
   const [chatHistory, setChatHistory] = useState<Array<{type: 'user' | 'assistant', content: string}>>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
@@ -40,62 +30,12 @@ const AppBuilder = () => {
   const [selectedIntegration, setSelectedIntegration] = useState<string>("");
   const isMobile = useIsMobile();
 
-  // Auto-generate app when initial prompt is provided
+  // Handle initial prompt by adding it to chat history
   useEffect(() => {
-    if (initialPrompt && !isGenerating && promptCount === 0) {
-      const generateFromInitialPrompt = async () => {
-        try {
-          // Validate initial prompt
-          const validatedPrompt = validateInput(initialPrompt.trim());
-          
-          setIsGenerating(true);
-          setPromptCount(1);
-          
-          // Add initial prompt to chat history
-          setChatHistory([{ type: 'user', content: validatedPrompt }]);
-
-          // Call the AI app generator
-          const { data, error } = await supabase.functions.invoke('generate-app', {
-            body: { prompt: validatedPrompt }
-          });
-
-          if (error) {
-            console.error('Error generating app:', error);
-            setChatHistory(prev => [...prev, { 
-              type: 'assistant', 
-              content: `Error generating app: ${error.message}` 
-            }]);
-            setAppContent({
-              title: "Generation failed",
-              subtitle: "Please try again with a different prompt."
-            });
-          } else {
-            // Successfully generated React Native app
-            setGeneratedApp(data);
-            setChatHistory(prev => [...prev, { 
-              type: 'assistant', 
-              content: `🎉 Generated your React Native app: ${data.appName}! ${data.summary}\n\n📱 Ready to run with:\n• npm install\n• npx expo start\n• Scan QR code or use simulator` 
-            }]);
-            setAppContent({
-              title: data.appName || "Your React Native App",
-              subtitle: data.summary || "React Native app generated successfully!"
-            });
-          }
-        } catch (err) {
-          console.error('Failed to generate app:', err);
-          setChatHistory([{ 
-            type: 'assistant', 
-            content: "Failed to generate app. Please check your connection and try again." 
-          }]);
-          setAppContent({
-            title: "Connection failed",
-            subtitle: "Please check your connection and try again."
-          });
-          setIsGenerating(false);
-        }
-      };
-
-      generateFromInitialPrompt();
+    if (initialPrompt && promptCount === 0) {
+      const validatedPrompt = validateInput(initialPrompt.trim());
+      setChatHistory([{ type: 'user', content: validatedPrompt }]);
+      setPromptCount(1);
     }
   }, [initialPrompt]);
 
@@ -106,70 +46,25 @@ const AppBuilder = () => {
         // Validate input before processing
         const validatedInput = validateInput(inputValue.trim());
         
-        setIsGenerating(true);
         setPromptCount(prev => prev + 1);
         
         // Add user message to chat
         setChatHistory(prev => [...prev, { type: 'user', content: validatedInput }]);
         setInputValue("");
 
-        try {
-          // Call the AI app generator
-          const { data, error } = await supabase.functions.invoke('generate-app', {
-            body: { prompt: validatedInput }
-          });
-
-          if (error) {
-            console.error('Error generating app:', error);
-            setChatHistory(prev => [...prev, { 
-              type: 'assistant', 
-              content: `Error generating app: ${error.message}` 
-            }]);
-            setAppContent({
-              title: "Generation failed",
-              subtitle: "Please try again with a different prompt."
-            });
-          } else {
-            // Successfully generated React Native app
-            setGeneratedApp(data);
-            setChatHistory(prev => [...prev, { 
-              type: 'assistant', 
-              content: `🎉 Generated your React Native app: ${data.appName}! ${data.summary}\n\n📱 Ready to run with:\n• npm install\n• npx expo start\n• Scan QR code or use simulator` 
-            }]);
-            setAppContent({
-              title: data.appName || "Your React Native App",
-              subtitle: data.summary || "React Native app generated successfully!"
-            });
-          }
-        } catch (err) {
-          console.error('Failed to generate app:', err);
-          setChatHistory(prev => [...prev, { 
-            type: 'assistant', 
-            content: "Failed to generate app. Please check your connection and try again." 
-          }]);
-          setAppContent({
-            title: "Connection failed",
-            subtitle: "Please check your connection and try again."
-          });
-        }
-
-        setIsGenerating(false);
+        // Add placeholder response (app building functionality removed)
+        setChatHistory(prev => [...prev, { 
+          type: 'assistant', 
+          content: "App building functionality has been temporarily removed. Please wait for it to be rebuilt." 
+        }]);
       } catch (validationError: any) {
         // Handle validation errors
         setChatHistory(prev => [...prev, { 
           type: 'assistant', 
           content: `Input validation failed: ${validationError.message}` 
         }]);
-        setIsGenerating(false);
       }
     }
-  };
-
-  const handleReload = () => {
-    setAppContent({
-      title: "Your app starts here",
-      subtitle: "In just a moment, you'll see your app begin to take shape."
-    });
   };
 
   if (!isBuilderRoot) {
@@ -217,14 +112,6 @@ const AppBuilder = () => {
               </SheetTrigger>
               <span className="text-sm font-medium">myPip Builder</span>
               <div className="flex items-center gap-2">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-xs"
-                  onClick={() => setShowCodeView(!showCodeView)}
-                >
-                  <Code2 className="h-4 w-4" />
-                </Button>
                 <Button variant="ghost" size="sm" className="text-xs">
                   <Share className="h-4 w-4" />
                 </Button>
@@ -250,97 +137,33 @@ const AppBuilder = () => {
                     <p className="text-sm">{message.content}</p>
                   </div>
                 ))}
-                
-                {isGenerating && (
-                  <div className="bg-accent/10 p-3 rounded-lg mr-4">
-                    <p className="text-sm text-accent">🤖 Generating your app...</p>
-                  </div>
-                )}
               </div>
 
               {/* App Preview */}
               <div className="flex-1 flex items-center justify-center p-4 bg-hero-bg">
-                {!showCodeView ? (
-                  <div className="relative w-full max-w-[280px] h-[500px] bg-black rounded-[40px] p-2 shadow-2xl">
-                    <div className="w-full h-full bg-white rounded-[30px] relative overflow-hidden">
-                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-20 h-4 bg-black rounded-full"></div>
-                      
-                      <div className="absolute top-[10px] left-0 right-0 flex justify-between items-center px-4 text-black text-xs font-medium">
-                        <span>9:41</span>
-                        <div className="flex items-center gap-1">
-                          <div className="w-4 h-2 border border-black rounded-sm relative">
-                            <div className="w-3 h-1 bg-green-500 rounded-sm absolute left-0.5 top-0.5"></div>
-                          </div>
+                <div className="relative w-full max-w-[280px] h-[500px] bg-black rounded-[40px] p-2 shadow-2xl">
+                  <div className="w-full h-full bg-white rounded-[30px] relative overflow-hidden">
+                    <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-20 h-4 bg-black rounded-full"></div>
+                    
+                    <div className="absolute top-[10px] left-0 right-0 flex justify-between items-center px-4 text-black text-xs font-medium">
+                      <span>9:41</span>
+                      <div className="flex items-center gap-1">
+                        <div className="w-4 h-2 border border-black rounded-sm relative">
+                          <div className="w-3 h-1 bg-green-500 rounded-sm absolute left-0.5 top-0.5"></div>
                         </div>
                       </div>
+                    </div>
 
-                       <div className="absolute top-10 left-0 right-0 bottom-8 flex flex-col overflow-hidden">
-                         {generatedApp && generatedApp.previewCode ? (
-                           <iframe
-                             {...createSecureIframeProps(generatedApp.previewCode)}
-                           />
-                         ) : generatedApp ? (
-                           <div className="flex-1 p-3 overflow-y-auto">
-                             <div className="space-y-2">
-                               <div className="text-xs bg-blue-50 p-2 rounded border border-blue-200">
-                                 <div className="font-medium text-blue-800 mb-1">📱 {generatedApp.appName}</div>
-                                 <div className="text-blue-600 text-[10px]">{generatedApp.description}</div>
-                               </div>
-                               
-                               <div className="text-xs bg-green-50 p-2 rounded border border-green-200">
-                                 <div className="font-medium text-green-800 mb-1">✅ Ready to Install</div>
-                                 <div className="text-green-600 text-[10px]">
-                                   {generatedApp.installInstructions?.slice(0, 2).join(' → ') || 'npm install → npx expo start'}
-                                 </div>
-                               </div>
-                               
-                               <div className="text-xs bg-purple-50 p-2 rounded border border-purple-200">
-                                 <div className="font-medium text-purple-800 mb-1">📁 Files Generated</div>
-                                 <div className="text-purple-600 text-[10px]">
-                                   {generatedApp.generatedFiles ? Object.keys(generatedApp.generatedFiles).length : 0} files ready
-                                 </div>
-                               </div>
-                             </div>
-                           </div>
-                         ) : (
-                           <div className="flex-1 flex items-center justify-center">
-                             <div className="text-center text-gray-500 p-4">
-                               <div className="text-sm font-medium">{appContent.title}</div>
-                               <div className="text-xs mt-1">{appContent.subtitle}</div>
-                             </div>
-                           </div>
-                         )}
+                     <div className="absolute top-10 left-0 right-0 bottom-8 flex flex-col overflow-hidden">
+                      <div className="flex-1 flex items-center justify-center">
+                        <div className="text-center text-gray-500 p-4">
+                          <div className="text-sm font-medium">App Builder Offline</div>
+                          <div className="text-xs mt-1">Functionality temporarily removed</div>
+                        </div>
                       </div>
-                    </div>
+                     </div>
                   </div>
-                ) : (
-                  <div className="w-full h-full bg-background rounded-lg border border-border overflow-hidden">
-                    <div className="h-full p-4">
-                    {generatedApp ? (
-                        <div className="h-full bg-black text-green-400 p-4 rounded font-mono text-xs overflow-auto">
-                          <div className="mb-4">
-                            <div className="text-yellow-400 mb-2">-- React Native App Files --</div>
-                            {generatedApp.generatedFiles && Object.entries(generatedApp.generatedFiles).map(([filename, content]) => (
-                              <div key={filename} className="mb-4">
-                                <div className="text-blue-400 mb-1">{filename}</div>
-                                <pre className="text-gray-300 text-[10px] whitespace-pre-wrap bg-gray-900 p-2 rounded max-h-32 overflow-y-auto">
-                                  {typeof content === 'string' ? content.slice(0, 500) + (content.length > 500 ? '...' : '') : JSON.stringify(content, null, 2).slice(0, 500)}
-                                </pre>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="h-full bg-muted/10 rounded border border-dashed border-muted-foreground/30 flex items-center justify-center">
-                          <div className="text-center text-muted-foreground">
-                            <Code2 className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                            <p className="text-sm">No app generated yet</p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
 
               {/* Mobile Input */}
@@ -354,14 +177,13 @@ const AppBuilder = () => {
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         className="border-0 bg-transparent pr-12 focus:ring-0 focus:outline-none placeholder:text-muted-foreground/60"
-                        disabled={isGenerating}
                       />
                       <Button
                         type="submit"
                         size="icon"
                         variant="ghost"
                         className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                        disabled={!inputValue.trim() || isGenerating}
+                        disabled={!inputValue.trim()}
                       >
                         <Send className="h-4 w-4" />
                       </Button>
@@ -410,12 +232,6 @@ const AppBuilder = () => {
                   <p className="text-sm">{message.content}</p>
                 </div>
               ))}
-              
-              {isGenerating && (
-                <div className="bg-accent/10 p-3 rounded-lg mr-4">
-                  <p className="text-sm text-accent">🤖 Generating your app...</p>
-                </div>
-              )}
             </div>
 
             <div className="p-4 bg-background rounded-3xl border border-border mx-4 mb-4">
@@ -436,14 +252,13 @@ const AppBuilder = () => {
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
                       className="border-0 bg-transparent pr-12 focus:ring-0 focus:outline-none placeholder:text-muted-foreground/60"
-                      disabled={isGenerating}
                     />
                     <Button
                       type="submit"
                       size="icon"
                       variant="ghost"
                       className="h-8 w-8 text-foreground hover:text-foreground/80"
-                      disabled={!inputValue.trim() || isGenerating}
+                      disabled={!inputValue.trim()}
                     >
                       <Send className="h-4 w-4" />
                     </Button>
@@ -480,15 +295,6 @@ const AppBuilder = () => {
                 <span className="text-sm text-muted-foreground">myPip Builder</span>
               </div>
               <div className="flex items-center gap-2">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-xs hover:bg-muted"
-                  onClick={() => setShowCodeView(!showCodeView)}
-                >
-                  <Code2 className="h-4 w-4" />
-                </Button>
-                
                  <Popover>
                    <PopoverTrigger asChild>
                      <Button variant="ghost" size="sm" className="text-xs hover:bg-gray-200 dark:hover:bg-gray-700">
@@ -520,30 +326,6 @@ const AppBuilder = () => {
                                <Database className="h-4 w-4 text-white" />
                              </div>
                              <span className="text-sm font-medium">Supabase</span>
-                           </div>
-                           <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg">Add API</Button>
-                         </div>
-                         <div 
-                           className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/50 cursor-pointer"
-                           onClick={() => { setSelectedIntegration("n8n"); setIsApiModalOpen(true); }}
-                         >
-                           <div className="flex items-center gap-3">
-                             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
-                               <Workflow className="h-4 w-4 text-white" />
-                             </div>
-                             <span className="text-sm font-medium">n8n</span>
-                           </div>
-                           <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg">Add API</Button>
-                         </div>
-                         <div 
-                           className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/50 cursor-pointer"
-                           onClick={() => { setSelectedIntegration("Firebase"); setIsApiModalOpen(true); }}
-                         >
-                           <div className="flex items-center gap-3">
-                             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
-                               <Flame className="h-4 w-4 text-white" />
-                             </div>
-                             <span className="text-sm font-medium">Firebase</span>
                            </div>
                            <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg">Add API</Button>
                          </div>
@@ -593,269 +375,44 @@ const AppBuilder = () => {
               </div>
             </div>
 
-
             <div className="flex-1 flex items-center justify-center p-8 relative">
-              {!showCodeView && (
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={handleReload}
-                  className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 bg-background/80 hover:bg-background"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                </Button>
-              )}
-              
-              {showCodeView ? (
-                /* Code View */
-                <div className="w-full h-full max-w-4xl bg-background rounded-lg border border-border overflow-hidden">
-                  <div className="h-full flex">
-                    {/* File Tree */}
-                    <div className="w-64 bg-muted/20 border-r border-border p-4">
-                      <div className="space-y-2 text-sm">
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Folder className="h-4 w-4" />
-                          <span>.git</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <FolderOpen className="h-4 w-4" />
-                          <span>app</span>
-                        </div>
-                        <div className="ml-6 space-y-1">
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <FileText className="h-4 w-4" />
-                            <span>_layout.tsx</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <FileText className="h-4 w-4" />
-                            <span>index.tsx</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <FolderOpen className="h-4 w-4" />
-                          <span>assets</span>
-                        </div>
-                        <div className="ml-6 space-y-1">
-                          <div className="flex items-center gap-2">
-                            <FolderOpen className="h-4 w-4" />
-                            <span>fonts</span>
-                          </div>
-                          <div className="ml-6">
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <FileText className="h-4 w-4" />
-                              <span>SpaceM...</span>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <Folder className="h-4 w-4" />
-                            <span>images</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Folder className="h-4 w-4" />
-                          <span>convex</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <FileText className="h-4 w-4" />
-                          <span>.env.example</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <FileText className="h-4 w-4" />
-                          <span>.gitignore</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <FileText className="h-4 w-4" />
-                          <span>app.json</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <FileText className="h-4 w-4" />
-                          <span>metro.config.js</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <FileText className="h-4 w-4" />
-                          <span>package.json</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <FileText className="h-4 w-4" />
-                          <span>tsconfig.json</span>
-                        </div>
+              {/* iPhone Frame - bigger size for desktop */}
+              <div className="relative w-[380px] h-[780px] bg-black rounded-[50px] p-3 shadow-2xl">
+                {/* iPhone Screen */}
+                <div className="w-full h-full bg-white rounded-[40px] relative overflow-hidden">
+                  {/* Dynamic Island */}
+                  <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-24 h-5 bg-black rounded-full"></div>
+                  
+                  {/* Status Bar */}
+                  <div className="absolute top-[10px] left-0 right-0 flex justify-between items-center px-6 text-black text-xs font-medium">
+                    <span>9:41</span>
+                    <div className="flex items-center gap-1">
+                      <div className="flex gap-1">
+                        <div className="w-1 h-1 bg-black rounded-full"></div>
+                        <div className="w-1 h-1 bg-black rounded-full"></div>
+                        <div className="w-1 h-1 bg-black rounded-full"></div>
+                        <div className="w-1 h-1 bg-black/40 rounded-full"></div>
+                      </div>
+                      <div className="w-6 h-3 border border-black rounded-sm relative ml-1">
+                        <div className="w-4.5 h-2 bg-green-500 rounded-sm absolute left-0.5 top-0.5"></div>
+                        <div className="w-0.5 h-1.5 bg-black rounded-sm absolute -right-1 top-0.75"></div>
                       </div>
                     </div>
-                    
-                    {/* Code Content */}
-                    <div className="flex-1 p-4">
-                      {generatedApp ? (
-                        <div className="h-full bg-gray-900 text-gray-300 p-4 rounded font-mono text-sm overflow-auto">
-                          {generatedApp.generatedFiles && Object.entries(generatedApp.generatedFiles).map(([filename, content]) => (
-                            <div key={filename} className="mb-6 border-b border-gray-700 pb-4">
-                              <div className="flex items-center gap-2 mb-3 sticky top-0 bg-gray-900 py-2">
-                                <FileText className="h-4 w-4 text-blue-400" />
-                                <span className="text-blue-400 font-medium">{filename}</span>
-                              </div>
-                              <pre className="text-gray-300 text-xs whitespace-pre-wrap bg-gray-800 p-3 rounded border overflow-x-auto">
-                                {typeof content === 'string' ? content : JSON.stringify(content, null, 2)}
-                              </pre>
-                            </div>
-                          ))}
-                          
-                          {generatedApp.schema_sql && (
-                            <div className="mb-6 border-b border-gray-700 pb-4">
-                              <div className="flex items-center gap-2 mb-3 sticky top-0 bg-gray-900 py-2">
-                                <FileText className="h-4 w-4 text-green-400" />
-                                <span className="text-green-400 font-medium">schema.sql</span>
-                              </div>
-                              <pre className="text-gray-300 text-xs whitespace-pre-wrap bg-gray-800 p-3 rounded border overflow-x-auto">
-                                {generatedApp.schema_sql}
-                              </pre>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="h-full bg-muted/10 rounded border border-dashed border-muted-foreground/30 flex items-center justify-center">
-                          <div className="text-center text-muted-foreground">
-                            <Code2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                            <p className="text-lg">No app generated yet</p>
-                            <p className="text-sm">Start building to see your code here</p>
-                          </div>
-                        </div>
-                      )}
+                  </div>
+
+                  {/* App Content Area */}
+                  <div className="absolute top-12 left-0 right-0 bottom-12 flex flex-col overflow-hidden">
+                    <div className="flex-1 flex flex-col items-center justify-center text-center space-y-3 px-4">
+                      <Smartphone className="h-10 w-10 text-gray-400" />
+                      <h3 className="text-base font-semibold text-black">App Builder Offline</h3>
+                      <p className="text-xs text-gray-500 px-2">Functionality temporarily removed</p>
                     </div>
                   </div>
-                </div>
-              ) : (
-                /* iPhone Frame - bigger size for desktop */
-                <div className="relative w-[380px] h-[780px] bg-black rounded-[50px] p-3 shadow-2xl">
-                  {/* iPhone Screen */}
-                  <div className="w-full h-full bg-white rounded-[40px] relative overflow-hidden">
-                    {/* Dynamic Island */}
-                    <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-24 h-5 bg-black rounded-full"></div>
-                    
-                    {/* Status Bar */}
-                    <div className="absolute top-[10px] left-0 right-0 flex justify-between items-center px-6 text-black text-xs font-medium">
-                      <span>9:41</span>
-                      <div className="flex items-center gap-1">
-                        <div className="flex gap-1">
-                          <div className="w-1 h-1 bg-black rounded-full"></div>
-                          <div className="w-1 h-1 bg-black rounded-full"></div>
-                          <div className="w-1 h-1 bg-black rounded-full"></div>
-                          <div className="w-1 h-1 bg-black/40 rounded-full"></div>
-                        </div>
-                        <div className="w-6 h-3 border border-black rounded-sm relative ml-1">
-                          <div className="w-4.5 h-2 bg-green-500 rounded-sm absolute left-0.5 top-0.5"></div>
-                          <div className="w-0.5 h-1.5 bg-black rounded-sm absolute -right-1 top-0.75"></div>
-                        </div>
-                      </div>
-                    </div>
 
-                    {/* App Content Area */}
-                    <div className="absolute top-12 left-0 right-0 bottom-12 flex flex-col overflow-hidden">
-                      {generatedApp ? (
-                        <>
-                          {/* Page Content */}
-                          <div className="flex-1 p-4 overflow-y-auto">
-                            <div className="space-y-3">
-                              {(() => {
-                                if (!generatedApp || !generatedApp.pages) return null;
-                                const currentPageData = generatedApp.pages.find(p => p.name === currentPage);
-                                if (!currentPageData) return null;
-                                
-                                return currentPageData.components?.map((componentName: string, index: number) => {
-                                  const component = generatedApp.components?.[componentName];
-                                  if (!component) return null;
-                                  
-                                  switch (component.type) {
-                                    case 'card':
-                                      return (
-                                        <div key={index} className="bg-gray-50 p-3 rounded-lg border">
-                                          <h4 className="font-medium text-sm text-black mb-1">
-                                            {component.props?.title || componentName}
-                                          </h4>
-                                          <p className="text-xs text-gray-600">
-                                            {component.props?.description || "Card component"}
-                                          </p>
-                                        </div>
-                                      );
-                                    case 'form':
-                                      return (
-                                        <div key={index} className="bg-white p-3 rounded-lg border shadow-sm">
-                                          <h4 className="font-medium text-sm text-black mb-2">{componentName}</h4>
-                                          {component.fields?.map((field: string, i: number) => (
-                                            <div key={i} className="mb-2">
-                                              <label className="text-xs text-gray-600 capitalize">{field}</label>
-                                              <div className="bg-gray-100 h-6 rounded border mt-1"></div>
-                                            </div>
-                                          ))}
-                                          <div className="bg-blue-500 text-white text-xs py-1 px-2 rounded text-center mt-2">
-                                            {component.props?.submitText || "Submit"}
-                                          </div>
-                                        </div>
-                                      );
-                                    case 'list':
-                                      return (
-                                        <div key={index} className="bg-white rounded-lg border">
-                                          <h4 className="font-medium text-sm text-black p-3 border-b">{componentName}</h4>
-                                          {[1,2,3].map(item => (
-                                            <div key={item} className="p-3 border-b last:border-b-0">
-                                              <div className="text-xs text-gray-800">Sample Item {item}</div>
-                                              <div className="text-xs text-gray-500">Sample description</div>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      );
-                                    case 'button':
-                                      return (
-                                        <div key={index} className="bg-blue-500 text-white text-xs py-2 px-3 rounded text-center">
-                                          {component.props?.text || componentName}
-                                        </div>
-                                      );
-                                    default:
-                                      return (
-                                        <div key={index} className="bg-gray-100 p-2 rounded text-xs text-gray-600">
-                                          {componentName} ({component.type})
-                                        </div>
-                                      );
-                                  }
-                                });
-                              })()}
-                            </div>
-                          </div>
-                          
-                          {/* Page Navigation */}
-                          <div className="border-t bg-gray-50 p-2">
-                            <div className="flex justify-center gap-1">
-                              {generatedApp && generatedApp.pages && generatedApp.pages.map((page: any) => (
-                                <button
-                                  key={page.name}
-                                  onClick={() => setCurrentPage(page.name)}
-                                  className={`px-2 py-1 text-xs rounded transition-colors ${
-                                    currentPage === page.name
-                                      ? 'bg-blue-500 text-white'
-                                      : 'text-gray-600 hover:bg-gray-200'
-                                  }`}
-                                >
-                                  {page.name}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center text-center space-y-3 px-4">
-                          <Smartphone className="h-10 w-10 text-gray-400" />
-                          <h3 className="text-base font-semibold text-black">{appContent.title}</h3>
-                          <p className="text-xs text-gray-500 px-2">{appContent.subtitle}</p>
-                          {isGenerating && (
-                            <div className="w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Home Indicator */}
-                    <div className="absolute bottom-1.5 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-black rounded-full"></div>
-                  </div>
+                  {/* Home Indicator */}
+                  <div className="absolute bottom-1.5 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-black rounded-full"></div>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </Panel>
@@ -908,41 +465,6 @@ const AppBuilder = () => {
             </div>
           </DialogContent>
         </Dialog>
-      
-      {/* API Modal */}
-      <Dialog open={isApiModalOpen} onOpenChange={setIsApiModalOpen}>
-        <DialogContent className="max-w-md rounded-2xl">
-          <DialogHeader>
-            <DialogTitle>Add API Key for {selectedIntegration}</DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="api-key">API Key</Label>
-              <Input id="api-key" type="password" placeholder="Enter your API key" className="mt-1" />
-            </div>
-            
-            <div className="flex gap-2 pt-4">
-              <Button 
-                variant="outline" 
-                className="flex-1"
-                onClick={() => setIsApiModalOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button 
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg"
-                onClick={() => {
-                  setIsApiModalOpen(false);
-                  // Auto-save API key logic would go here
-                }}
-              >
-                Save & Connect
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
