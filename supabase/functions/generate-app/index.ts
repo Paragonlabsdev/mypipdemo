@@ -106,7 +106,7 @@ serve(async (req) => {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'claude-sonnet-4-20250514',
         max_tokens: 4000,
         messages: [
           {
@@ -150,32 +150,58 @@ Return as JSON:
     });
 
     const data = await response.json();
-    console.log('Claude response received');
+    console.log('Claude response received:', { status: response.status, hasContent: !!data.content });
+
+    // Check for API errors first
+    if (!response.ok) {
+      console.error('Claude API error:', data);
+      throw new Error(`Claude API error (${response.status}): ${data.error?.message || 'Unknown error'}`);
+    }
 
     // Extract content from Claude response
     let content = '';
     if (data.content && Array.isArray(data.content)) {
       content = data.content.map(item => item.text).join('');
+      console.log('Extracted content length:', content.length);
     } else if (data.content) {
       content = data.content;
+      console.log('Extracted content length:', content.length);
     } else {
+      console.error('No content in Claude response. Full response:', JSON.stringify(data, null, 2));
       throw new Error('No content in Claude response');
     }
 
-    // Try to extract JSON from the response
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    let appData;
+    // Try to extract JSON from the response - improved extraction
+    console.log('Attempting to extract JSON from content...');
     
-    if (jsonMatch) {
-      try {
-        appData = JSON.parse(jsonMatch[0]);
-      } catch (e) {
-        console.error('JSON parse error:', e);
-        throw new Error('Failed to parse JSON from Claude response');
+    // Try multiple JSON extraction patterns
+    const jsonPatterns = [
+      /```json\s*(\{[\s\S]*?\})\s*```/,  // JSON in code blocks
+      /(\{[\s\S]*?\})/,                  // Any JSON object
+      /```\s*(\{[\s\S]*?\})\s*```/       // JSON in generic code blocks
+    ];
+    
+    let appData;
+    let jsonMatch;
+    
+    for (const pattern of jsonPatterns) {
+      jsonMatch = content.match(pattern);
+      if (jsonMatch) {
+        console.log('Found JSON match with pattern:', pattern.toString());
+        try {
+          appData = JSON.parse(jsonMatch[1] || jsonMatch[0]);
+          console.log('Successfully parsed JSON');
+          break;
+        } catch (e) {
+          console.log('Failed to parse with this pattern, trying next...');
+          continue;
+        }
       }
-    } else {
-      console.error('No JSON found in response');
-      throw new Error('No JSON found in Claude response');
+    }
+    
+    if (!appData) {
+      console.error('No valid JSON found in response. Content sample:', content.substring(0, 500));
+      throw new Error(`Failed to extract valid JSON from Claude response. Content length: ${content.length}`);
     }
 
     // Ensure required fields and sanitize output
@@ -234,88 +260,37 @@ Return as JSON:
 
   } catch (error) {
     console.error('❌ Error generating app:', error.message);
+    console.error('Full error details:', error);
     
     // Return appropriate error response based on error type
     if (error.message.includes('Rate limit exceeded')) {
-      return new Response(JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }), {
+      return new Response(JSON.stringify({ 
+        error: 'Rate limit exceeded. Please try again later.',
+        details: 'Too many requests from your IP address'
+      }), {
         status: 429,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
     
     if (error.message.includes('Invalid prompt') || error.message.includes('unsafe content')) {
-      return new Response(JSON.stringify({ error: error.message }), {
+      return new Response(JSON.stringify({ 
+        error: error.message,
+        details: 'Please check your prompt and try again'
+      }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
     
-    // Return fallback app for other errors
-    const userPrompt = 'Sample App'; // Use safe fallback instead of parsing again
-    
-    const fallbackApp = {
-      appName: `${userPrompt} App`,
-      appId: `app.mypip.${userPrompt.toLowerCase().replace(/\s+/g, '')}`,
-      description: `A React Native app for ${userPrompt}`,
-      generatedFiles: {
-        'package.json': JSON.stringify({
-          "name": "my-expo-app",
-          "main": "node_modules/expo-router/entry",
-          "version": "1.0.0",
-          "scripts": {
-            "start": "expo start",
-            "dev": "expo start --tunnel"
-          },
-          "dependencies": {
-            "expo": "~50.0.0",
-            "react": "18.2.0",
-            "react-native": "0.73.0",
-            "expo-router": "^3.0.0"
-          }
-        }, null, 2),
-        'app.json': JSON.stringify({
-          "expo": {
-            "name": `${userPrompt} App`,
-            "slug": `${userPrompt.toLowerCase().replace(/\s+/g, '-')}-app`,
-            "version": "1.0.0",
-            "orientation": "portrait",
-            "platforms": ["ios", "android", "web"]
-          }
-        }, null, 2),
-        'App.js': 'import "expo-router/entry";',
-        'app/index.js': `import { View, Text, StyleSheet } from 'react-native';
-
-export default function HomeScreen() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>${userPrompt} App</Text>
-      <Text style={styles.subtitle}>Your app is ready!</Text>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 10 },
-  subtitle: { fontSize: 16, color: '#666' }
-});`,
-        'app/_layout.js': `import { Stack } from 'expo-router';
-
-export default function RootLayout() {
-  return <Stack><Stack.Screen name="index" /></Stack>;
-}`,
-        'README.md': `# ${userPrompt} App\n\nReact Native app built with Expo.\n\n## Setup\n1. npm install\n2. npx expo start\n3. Scan QR code with Expo Go`
-      },
-      installInstructions: ["npm install", "npx expo start", "Scan QR code"],
-      summary: `Generated ${userPrompt} app with React Native and Expo`,
-      previewCode: `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>${userPrompt} App</title>
-<style>body{margin:0;padding:20px;background:#f5f5f5;font-family:-apple-system,sans-serif}.container{max-width:375px;margin:0 auto;background:white;min-height:600px;border-radius:20px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1)}.header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:40px 20px 20px;text-align:center}.title{font-size:24px;font-weight:bold}.content{padding:30px;text-align:center}.button{background:#667eea;color:white;border:none;padding:12px 24px;border-radius:8px;margin:10px}</style>
-</head><body><div class="container"><div class="header"><div class="title">${userPrompt} App</div></div><div class="content"><button class="button">Get Started</button></div></div></body></html>`
-    };
-
-    return new Response(JSON.stringify(fallbackApp), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    // Return detailed error for debugging instead of fallback
+    return new Response(JSON.stringify({ 
+      error: 'Failed to generate app',
+      details: error.message,
+      timestamp: new Date().toISOString()
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 });
