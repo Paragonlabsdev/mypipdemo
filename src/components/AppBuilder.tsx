@@ -102,7 +102,7 @@ const HtmlRenderer = ({ htmlCode }: { htmlCode: string }) => {
     <iframe
       srcDoc={enhancedHtml}
       className="w-full h-full border-none"
-      sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-popups allow-modals allow-downloads"
       title="Generated App Preview"
       style={{ 
         pointerEvents: 'auto',
