@@ -28,7 +28,12 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex relative">
+      {/* Logo in top left */}
+      <div className="absolute top-6 left-6 z-10">
+        <img src="/lovable-uploads/6214122f-5946-4719-8020-e362aef331bf.png" alt="myPip Logo" className="w-12 h-12" />
+      </div>
+      
       {/* Left side - Form */}
       <div className="flex-1 flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-md space-y-6">
@@ -155,11 +160,14 @@ const Signup = () => {
         </div>
       </div>
 
-      {/* Right side - Blue gradient background */}
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-blue-900/40" />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-96 h-96 bg-gradient-to-br from-blue-400/30 to-purple-600/30 rounded-full blur-3xl" />
+      {/* Right side - Mobile games background */}
+      <div className="hidden lg:flex flex-1 relative overflow-hidden p-6">
+        <div className="w-full h-full">
+          <img 
+            src="/lovable-uploads/deae718c-0333-41ea-bb0d-d30e9193ea3c.png" 
+            alt="Mobile Games" 
+            className="w-full h-full object-cover rounded-3xl"
+          />
         </div>
       </div>
     </div>

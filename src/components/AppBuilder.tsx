@@ -49,13 +49,22 @@ const generateProjectName = async (prompt: string): Promise<string> => {
 const HtmlRenderer = ({ htmlCode }: { htmlCode: string }) => {
   if (!htmlCode) return null;
 
-  // Inject viewport meta tag and styling to ensure proper mobile scaling
+  // Inject viewport meta tag and styling to ensure proper mobile scaling and full interactivity
   const enhancedHtml = htmlCode.replace(
     /<head>/i,
     `<head>
       <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
       <style>
-        * { box-sizing: border-box; }
+        * { 
+          box-sizing: border-box; 
+          -webkit-touch-callout: none;
+          -webkit-user-select: none;
+          -khtml-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+          -webkit-tap-highlight-color: transparent;
+        }
         html, body { 
           margin: 0; 
           padding: 0; 
@@ -63,6 +72,7 @@ const HtmlRenderer = ({ htmlCode }: { htmlCode: string }) => {
           height: 100vh; 
           overflow-x: hidden;
           font-size: 14px;
+          touch-action: manipulation;
         }
         body { 
           display: flex; 
@@ -75,6 +85,16 @@ const HtmlRenderer = ({ htmlCode }: { htmlCode: string }) => {
           flex-direction: column;
           max-width: 100%;
         }
+        button, input, select, textarea {
+          -webkit-user-select: text;
+          -moz-user-select: text;
+          -ms-user-select: text;
+          user-select: text;
+        }
+        button {
+          cursor: pointer;
+          touch-action: manipulation;
+        }
       </style>`
   );
 
@@ -82,9 +102,12 @@ const HtmlRenderer = ({ htmlCode }: { htmlCode: string }) => {
     <iframe
       srcDoc={enhancedHtml}
       className="w-full h-full border-none"
-      sandbox="allow-scripts allow-same-origin allow-forms"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock"
       title="Generated App Preview"
-      style={{ pointerEvents: 'auto' }}
+      style={{ 
+        pointerEvents: 'auto',
+        touchAction: 'auto'
+      }}
     />
   );
 };
@@ -135,18 +158,9 @@ const AppBuilder = () => {
   const generateApp = async (prompt: string) => {
     setIsGenerating(true);
     try {
-      // Step 1: Enhance the prompt with Claude Sonnet 3.7
-      const { data: enhanceData, error: enhanceError } = await supabase.functions.invoke('enhance-prompt-claude', {
-        body: { prompt: prompt.trim() }
-      });
-
-      if (enhanceError) throw enhanceError;
-
-      const enhancedPrompt = enhanceData?.enhancedPrompt || prompt.trim();
-
-      // Step 2: Generate app with the enhanced prompt
+      // Generate app directly with Claude
       const { data, error } = await supabase.functions.invoke('generate-app-claude', {
-        body: { prompt: enhancedPrompt }
+        body: { prompt: prompt.trim() }
       });
 
       if (error) throw error;
