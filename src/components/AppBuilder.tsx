@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, Outlet, useLocation } from "react-router-dom";
 import { Send, Smartphone, RefreshCw, Paperclip, Share, Monitor, Puzzle, Code2, FileText, Folder, FolderOpen, Menu, QrCode, ChevronDown, Apple, PlayCircle, Github, Database, Workflow, Flame, User } from "lucide-react";
 import { BuilderSidebar } from "@/components/BuilderSidebar";
@@ -16,6 +16,37 @@ import { AccountModal } from "@/components/AccountModal";
 import { validateInput } from "@/lib/security";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import React from "react";
+
+// Component to render generated React code
+const CodeRenderer = ({ code }: { code: string }) => {
+  const RenderedComponent = useMemo(() => {
+    if (!code) return null;
+
+    try {
+      // Extract the main component from the code
+      const componentMatch = code.match(/const\s+(\w+):\s*React\.FC.*?(?=const\s+\w+:|export\s+default|$)/s);
+      if (!componentMatch) return null;
+
+      // Create a safe execution environment
+      const createComponent = new Function('React', 'useState', 'useEffect', `
+        ${code}
+        return ${componentMatch[1] || 'CalorieTracker'};
+      `);
+
+      return createComponent(React, useState, useEffect);
+    } catch (error) {
+      console.error('Error rendering component:', error);
+      return () => React.createElement('div', { 
+        className: 'p-4 text-center text-red-600 text-sm' 
+      }, 'Error rendering app');
+    }
+  }, [code]);
+
+  if (!RenderedComponent) return null;
+
+  return React.createElement(RenderedComponent);
+};
 
 const AppBuilder = () => {
   const [searchParams] = useSearchParams();
@@ -203,20 +234,20 @@ const AppBuilder = () => {
                     </div>
 
                      <div className="absolute top-10 left-0 right-0 bottom-8 flex flex-col overflow-hidden">
-                     <div className="flex-1 p-2">
+                     <div className="flex-1 bg-white">
                        {generatedCode ? (
-                         <div className="w-full h-full bg-gray-50 rounded text-xs overflow-auto">
-                           <pre className="p-2 whitespace-pre-wrap font-mono text-gray-800">{generatedCode}</pre>
+                         <div className="w-full h-full overflow-auto">
+                           <CodeRenderer code={generatedCode} />
                          </div>
                        ) : isGenerating ? (
-                         <div className="flex flex-1 items-center justify-center">
+                         <div className="flex flex-1 items-center justify-center h-full">
                            <div className="text-center text-gray-600">
                              <div className="text-xs font-medium">Generating...</div>
                              <div className="text-xs mt-1">Claude is building your app</div>
                            </div>
                          </div>
                        ) : (
-                         <div className="flex flex-1 items-center justify-center">
+                         <div className="flex flex-1 items-center justify-center h-full">
                            <div className="text-center text-gray-500">
                              <div className="text-xs font-medium">Ready to Build</div>
                              <div className="text-xs mt-1">Enter your app idea below</div>
@@ -486,14 +517,14 @@ const AppBuilder = () => {
                   </div>
 
                    {/* App Content Area */}
-                   <div className="absolute top-16 left-0 right-0 bottom-12 flex flex-col overflow-hidden">
-                     <div className="flex-1 p-4">
+                   <div className="absolute top-16 left-0 right-0 bottom-12 flex flex-col overflow-hidden bg-white">
+                     <div className="flex-1">
                        {generatedCode ? (
-                         <div className="w-full h-full bg-gray-50 rounded-lg overflow-auto text-xs">
-                           <pre className="p-4 whitespace-pre-wrap font-mono text-gray-800">{generatedCode}</pre>
+                         <div className="w-full h-full overflow-auto">
+                           <CodeRenderer code={generatedCode} />
                          </div>
                        ) : isGenerating ? (
-                         <div className="flex flex-1 items-center justify-center">
+                         <div className="flex flex-1 items-center justify-center h-full">
                            <div className="text-center text-gray-600">
                              <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full flex items-center justify-center animate-pulse">
                                <Smartphone className="text-white text-lg" />
@@ -503,7 +534,7 @@ const AppBuilder = () => {
                            </div>
                          </div>
                        ) : (
-                         <div className="flex flex-1 items-center justify-center">
+                         <div className="flex flex-1 items-center justify-center h-full">
                            <div className="text-center text-gray-500">
                              <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center">
                                <Smartphone className="text-white text-lg" />
