@@ -57,13 +57,6 @@ const HtmlRenderer = ({ htmlCode }: { htmlCode: string }) => {
       <style>
         * { 
           box-sizing: border-box; 
-          -webkit-touch-callout: none;
-          -webkit-user-select: none;
-          -khtml-user-select: none;
-          -moz-user-select: none;
-          -ms-user-select: none;
-          user-select: none;
-          -webkit-tap-highlight-color: transparent;
         }
         html, body { 
           margin: 0; 
@@ -72,7 +65,6 @@ const HtmlRenderer = ({ htmlCode }: { htmlCode: string }) => {
           height: 100vh; 
           overflow-x: hidden;
           font-size: 14px;
-          touch-action: manipulation;
         }
         body { 
           display: flex; 
@@ -85,15 +77,8 @@ const HtmlRenderer = ({ htmlCode }: { htmlCode: string }) => {
           flex-direction: column;
           max-width: 100%;
         }
-        button, input, select, textarea {
-          -webkit-user-select: text;
-          -moz-user-select: text;
-          -ms-user-select: text;
-          user-select: text;
-        }
         button {
           cursor: pointer;
-          touch-action: manipulation;
         }
       </style>`
   );

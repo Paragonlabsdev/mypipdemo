@@ -37,10 +37,26 @@ serve(async (req) => {
         max_tokens: 4000,
         messages: [{
           role: 'user',
-          content: `Create a beautiful, modern mobile web app for: ${prompt}
+          content: `Create a fully functional, beautiful mobile web app for: ${prompt}
 
 CRITICAL REQUIREMENTS:
 - Generate a complete HTML document with embedded CSS and JavaScript
+- Make ALL interactive elements FULLY FUNCTIONAL with working JavaScript
+- Use addEventListener() for ALL button clicks, form submissions, and user interactions
+- Include working game mechanics, form processing, data handling as needed
+- Ensure every button, input, and interactive element actually does something
+- Add proper event handlers that respond to clicks, touches, and inputs
+
+FUNCTIONALITY REQUIREMENTS:
+- All buttons must have working click handlers using addEventListener()
+- Forms must process input and show results/feedback
+- Games must have actual gameplay mechanics (scoring, movement, collision detection)
+- Interactive elements must respond immediately to user actions
+- Include state management for dynamic content updates
+- Add proper error handling and user feedback
+- Make sure clicking/touching elements triggers their intended function
+
+DESIGN REQUIREMENTS:
 - Use modern, attractive UI design with proper spacing and typography
 - Include interactive buttons, cards, forms, and visual components
 - Use a professional color scheme (gradients, modern colors)
@@ -51,9 +67,6 @@ CRITICAL REQUIREMENTS:
 - Add icons using Unicode symbols or CSS-drawn icons
 - Include proper input fields, buttons with hover effects
 - Use modern typography with good hierarchy
-- Add loading states, success messages, and interactive feedback
-- Include proper navigation if needed
-- Make it look like a real production mobile app
 
 STYLING GUIDELINES:
 - Use modern color palettes (blues, purples, greens with gradients)
@@ -67,7 +80,15 @@ STYLING GUIDELINES:
 - Use modern input field styling
 - Add visual feedback for user interactions
 
-Return a complete HTML document that looks professional and modern, not just text. Make it visually stunning!`
+EXAMPLE FUNCTIONAL PATTERNS:
+- document.addEventListener('DOMContentLoaded', function() { ... });
+- button.addEventListener('click', function() { ... });
+- form.addEventListener('submit', function(e) { e.preventDefault(); ... });
+- Use setInterval() or requestAnimationFrame() for games
+- Update DOM elements with textContent, innerHTML, or style changes
+- Handle user input with proper validation and feedback
+
+Return a complete HTML document that is both visually stunning AND fully functional!`
         }]
       })
     });
