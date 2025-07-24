@@ -23,7 +23,7 @@ serve(async (req) => {
       throw new Error('Anthropic API key not configured');
     }
 
-    console.log('Sending request to Claude Sonnet 4...');
+    console.log('Sending request to Claude Sonnet 3.7...');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
