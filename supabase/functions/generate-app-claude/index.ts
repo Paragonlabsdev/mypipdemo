@@ -37,23 +37,37 @@ serve(async (req) => {
         max_tokens: 4000,
         messages: [{
           role: 'user',
-          content: `Generate a complete mobile web app for: ${prompt}
+          content: `Create a beautiful, modern mobile web app for: ${prompt}
 
-Requirements:
-- Create a fully functional HTML page with embedded CSS and JavaScript
-- Use modern CSS (Flexbox/Grid) for mobile-responsive layout
-- Make it touch-friendly and optimized for mobile screens
-- Include interactive JavaScript functionality
-- Use a clean, modern design with good UX
-- Add proper semantic HTML structure
-- Include viewport meta tag and mobile optimizations
-- Return ONLY valid HTML code with <style> and <script> tags embedded
-- Make it visually appealing with smooth animations
-- Ensure all functionality works without external dependencies
-- Use modern JavaScript (ES6+) features
-- Add appropriate touch events for mobile interaction
+CRITICAL REQUIREMENTS:
+- Generate a complete HTML document with embedded CSS and JavaScript
+- Use modern, attractive UI design with proper spacing and typography
+- Include interactive buttons, cards, forms, and visual components
+- Use a professional color scheme (gradients, modern colors)
+- Add proper shadows, rounded corners, and modern styling
+- Make it fully responsive and touch-friendly for mobile
+- Include smooth animations and transitions
+- Use CSS Grid/Flexbox for perfect layouts
+- Add icons using Unicode symbols or CSS-drawn icons
+- Include proper input fields, buttons with hover effects
+- Use modern typography with good hierarchy
+- Add loading states, success messages, and interactive feedback
+- Include proper navigation if needed
+- Make it look like a real production mobile app
 
-Return a complete HTML document that can be directly displayed in an iframe or mobile preview.`
+STYLING GUIDELINES:
+- Use modern color palettes (blues, purples, greens with gradients)
+- Include box-shadows for depth
+- Use border-radius for rounded elements
+- Add smooth CSS transitions for interactions
+- Include proper spacing with margins and padding
+- Use modern fonts (system fonts or web fonts)
+- Add visual hierarchy with different font sizes/weights
+- Include hover and active states for buttons
+- Use modern input field styling
+- Add visual feedback for user interactions
+
+Return a complete HTML document that looks professional and modern, not just text. Make it visually stunning!`
         }]
       })
     });
