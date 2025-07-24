@@ -23,7 +23,7 @@ serve(async (req) => {
       throw new Error('Anthropic API key not configured');
     }
 
-    console.log('Building app with Claude Sonnet 4...');
+    console.log('Sending request to Claude Sonnet 4...');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -34,64 +34,54 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 8000,
+        max_tokens: 4000,
         messages: [{
           role: 'user',
-          content: `Create a fully functional mobile web app for: ${prompt}
+          content: `Create a beautiful, modern mobile web app for: ${prompt}
 
-CRITICAL REQUIREMENTS - MUST BE FULLY FUNCTIONAL:
-- Generate COMPLETE HTML with embedded CSS and JavaScript
-- ALL interactive elements MUST work with proper event listeners
-- Use addEventListener() for every button, input, and interaction
-- Include full game mechanics, form processing, and state management
-- NEVER truncate or abbreviate the JavaScript - write it COMPLETELY
-- Ensure every feature actually works when clicked/touched
+CRITICAL REQUIREMENTS:
+- Generate a complete HTML document with embedded CSS and JavaScript
+- Use modern, attractive UI design with proper spacing and typography
+- Include interactive buttons, cards, forms, and visual components
+- Use a professional color scheme (gradients, modern colors)
+- Add proper shadows, rounded corners, and modern styling
+- Make it fully responsive and touch-friendly for mobile
+- Include smooth animations and transitions
+- Use CSS Grid/Flexbox for perfect layouts
+- Add icons using Unicode symbols or CSS-drawn icons
+- Include proper input fields, buttons with hover effects
+- Use modern typography with good hierarchy
+- Add loading states, success messages, and interactive feedback
+- Include proper navigation if needed
+- Make it look like a real production mobile app
 
-FUNCTIONALITY REQUIREMENTS:
-- All buttons must have working click handlers
-- Games must have complete gameplay (scoring, physics, collision detection)
-- Forms must process input and show results
-- Include proper error handling and user feedback
-- Add state management for dynamic content
-- Make sure ALL JavaScript is complete and functional
+STYLING GUIDELINES:
+- Use modern color palettes (blues, purples, greens with gradients)
+- Include box-shadows for depth
+- Use border-radius for rounded elements
+- Add smooth CSS transitions for interactions
+- Include proper spacing with margins and padding
+- Use modern fonts (system fonts or web fonts)
+- Add visual hierarchy with different font sizes/weights
+- Include hover and active states for buttons
+- Use modern input field styling
+- Add visual feedback for user interactions
 
-DESIGN REQUIREMENTS:
-- Modern, beautiful mobile-first UI design
-- Professional color schemes with gradients
-- Smooth animations and transitions
-- Touch-friendly interface elements
-- Responsive layout that works on all mobile screens
-- Modern typography and proper spacing
-
-TECHNICAL REQUIREMENTS:
-- Complete, untruncated JavaScript code
-- Proper DOM event handling
-- Mobile touch event support
-- Error handling and validation
-- Clean, readable code structure
-
-EXAMPLE PATTERNS TO USE:
-- document.addEventListener('DOMContentLoaded', function() { /* init code */ });
-- element.addEventListener('click', function() { /* handler */ });
-- element.addEventListener('touchstart', function() { /* touch handler */ });
-- Use setInterval() or requestAnimationFrame() for animations
-- Include proper cleanup for intervals/timeouts
-
-IMPORTANT: Write the COMPLETE HTML document with FULL JavaScript functionality. Do not truncate or abbreviate any code. Every interactive element must be fully implemented.`
+Return a complete HTML document that looks professional and modern, not just text. Make it visually stunning!`
         }]
       })
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Claude API error:', response.status, errorText);
-      throw new Error(`Claude API error: ${response.status}`);
+      console.error('Anthropic API error:', response.status, errorText);
+      throw new Error(`Anthropic API error: ${response.status}`);
     }
 
     const data = await response.json();
     let generatedCode = data.content[0].text;
 
-    // Extract HTML code more reliably
+    // Extract only the HTML code, removing all descriptions and explanations
     let htmlMatch = generatedCode.match(/```html\s*([\s\S]*?)\s*```/);
     if (htmlMatch) {
       generatedCode = htmlMatch[1].trim();
@@ -101,20 +91,20 @@ IMPORTANT: Write the COMPLETE HTML document with FULL JavaScript functionality. 
       if (htmlMatch) {
         generatedCode = htmlMatch[0];
       } else {
-        // If no match, look for just html tag
+        // If still no match, look for just the html tag
         htmlMatch = generatedCode.match(/<html[\s\S]*?<\/html>/i);
         if (htmlMatch) {
           generatedCode = `<!DOCTYPE html>\n${htmlMatch[0]}`;
+        } else {
+          // Last resort: remove everything before and after HTML content
+          generatedCode = generatedCode
+            .replace(/^[\s\S]*?(?=<!DOCTYPE html>|<html)/i, '')
+            .replace(/(?<=<\/html>)[\s\S]*$/i, '');
         }
       }
     }
 
-    // Ensure the HTML is complete and properly formatted
-    if (!generatedCode.includes('</html>')) {
-      throw new Error('Generated HTML appears to be incomplete');
-    }
-
-    console.log('Successfully generated complete app');
+    console.log('Successfully generated app code');
 
     return new Response(
       JSON.stringify({ 

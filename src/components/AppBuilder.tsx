@@ -45,27 +45,68 @@ const generateProjectName = async (prompt: string): Promise<string> => {
   }
 };
 
-// Component to render generated HTML code with minimal interference
+// Component to render generated HTML code
 const HtmlRenderer = ({ htmlCode }: { htmlCode: string }) => {
   if (!htmlCode) return null;
 
-  // Only inject essential viewport meta tag, no interfering CSS
+  // Inject viewport meta tag and styling to ensure proper mobile scaling and full interactivity
   const enhancedHtml = htmlCode.replace(
     /<head>/i,
     `<head>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">`
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+      <style>
+        * { 
+          box-sizing: border-box; 
+          -webkit-touch-callout: none;
+          -webkit-user-select: none;
+          -khtml-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+          -webkit-tap-highlight-color: transparent;
+        }
+        html, body { 
+          margin: 0; 
+          padding: 0; 
+          width: 100%; 
+          height: 100vh; 
+          overflow-x: hidden;
+          font-size: 14px;
+          touch-action: manipulation;
+        }
+        body { 
+          display: flex; 
+          flex-direction: column;
+          min-height: 100vh;
+        }
+        .container, .main, .app { 
+          flex: 1; 
+          display: flex; 
+          flex-direction: column;
+          max-width: 100%;
+        }
+        button, input, select, textarea {
+          -webkit-user-select: text;
+          -moz-user-select: text;
+          -ms-user-select: text;
+          user-select: text;
+        }
+        button {
+          cursor: pointer;
+          touch-action: manipulation;
+        }
+      </style>`
   );
 
   return (
     <iframe
       srcDoc={enhancedHtml}
       className="w-full h-full border-none"
-      sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-popups allow-modals"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-popups allow-modals allow-downloads"
       title="Generated App Preview"
       style={{ 
         pointerEvents: 'auto',
-        touchAction: 'auto',
-        background: 'white'
+        touchAction: 'auto'
       }}
     />
   );
@@ -117,29 +158,17 @@ const AppBuilder = () => {
   const generateApp = async (prompt: string) => {
     setIsGenerating(true);
     try {
-      console.log('Starting app generation for:', prompt);
-      
-      // Generate app with Claude Sonnet 4
+      // Generate app directly with Claude
       const { data, error } = await supabase.functions.invoke('generate-app-claude', {
         body: { prompt: prompt.trim() }
       });
 
-      if (error) {
-        console.error('Supabase function error:', error);
-        throw error;
-      }
+      if (error) throw error;
 
       if (data?.success && data?.code) {
-        console.log('App generated successfully, code length:', data.code.length);
-        
-        // Validate that we have complete HTML
-        if (!data.code.includes('</html>')) {
-          throw new Error('Generated app appears to be incomplete');
-        }
-        
         setGeneratedCode(data.code);
         
-        // Save project to database
+        // Step 3: Save project to database
         try {
           const userIP = await getUserIP();
           const projectName = await generateProjectName(prompt);
@@ -154,30 +183,29 @@ const AppBuilder = () => {
           });
         } catch (saveError) {
           console.error('Failed to save project:', saveError);
-          // Don't fail generation if saving fails
+          // Don't fail the whole generation if saving fails
         }
 
         setChatHistory(prev => [...prev, { 
           type: 'assistant', 
-          content: "Your app is ready! You can interact with it in the preview - all buttons and features should work." 
+          content: "I've generated your mobile app! You can see the preview in the phone mockup and download the code if needed." 
         }]);
-        
         toast({
-          title: "App Generated!",
-          description: "Your fully functional app is ready to use",
+          title: "Success!",
+          description: "Your app has been generated successfully",
         });
       } else {
         throw new Error(data?.error || 'Failed to generate app');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('App generation error:', error);
       setChatHistory(prev => [...prev, { 
         type: 'assistant', 
-        content: `Failed to generate app: ${error.message}. Please try again with a different prompt.` 
+        content: `Sorry, I couldn't generate your app: ${error.message}. Please try again.` 
       }]);
       toast({
         title: "Generation Failed",
-        description: error.message || "Failed to generate app",
+        description: error.message || "Failed to generate app. Please try again.",
         variant: "destructive",
       });
     } finally {
