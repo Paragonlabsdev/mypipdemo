@@ -25,7 +25,7 @@ export const AccountModal = ({ isOpen, onOpenChange }: AccountModalProps) => {
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-xs p-0 rounded-2xl shadow-xl border-0 relative" style={{marginTop: '3.5rem'}}>
+        <DialogContent className="max-w-xs p-0 rounded-2xl shadow-xl border-0 relative top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
           {/* Close Button */}
           <Button 
             variant="ghost" 

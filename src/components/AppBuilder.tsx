@@ -49,12 +49,42 @@ const generateProjectName = async (prompt: string): Promise<string> => {
 const HtmlRenderer = ({ htmlCode }: { htmlCode: string }) => {
   if (!htmlCode) return null;
 
+  // Inject viewport meta tag and styling to ensure proper mobile scaling
+  const enhancedHtml = htmlCode.replace(
+    /<head>/i,
+    `<head>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+      <style>
+        * { box-sizing: border-box; }
+        html, body { 
+          margin: 0; 
+          padding: 0; 
+          width: 100%; 
+          height: 100vh; 
+          overflow-x: hidden;
+          font-size: 14px;
+        }
+        body { 
+          display: flex; 
+          flex-direction: column;
+          min-height: 100vh;
+        }
+        .container, .main, .app { 
+          flex: 1; 
+          display: flex; 
+          flex-direction: column;
+          max-width: 100%;
+        }
+      </style>`
+  );
+
   return (
     <iframe
-      srcDoc={htmlCode}
+      srcDoc={enhancedHtml}
       className="w-full h-full border-none"
-      sandbox="allow-scripts allow-same-origin"
+      sandbox="allow-scripts allow-same-origin allow-forms"
       title="Generated App Preview"
+      style={{ pointerEvents: 'auto' }}
     />
   );
 };
