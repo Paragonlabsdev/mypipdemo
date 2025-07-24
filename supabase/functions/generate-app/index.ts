@@ -1,7 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
 
 const corsHeaders = {
@@ -13,25 +12,6 @@ interface ExpoAppStructure {
   appName: string;
   appId: string;
   description: string;
-  plannerOutput: {
-    screens: Array<{
-      name: string;
-      route: string;
-      purpose: string;
-      features: string[];
-    }>;
-    navigation: {
-      type: string;
-      structure: any;
-    };
-    apiRequirements: string[];
-    dataModels: string[];
-  };
-  uiComposerOutput: {
-    layoutStructure: any;
-    componentHierarchy: any;
-    navigationFlow: any;
-  };
   generatedFiles: {
     'package.json': string;
     'app.json': string;
@@ -42,6 +22,7 @@ interface ExpoAppStructure {
   };
   installInstructions: string[];
   summary: string;
+  previewCode: string; // HTML/JS for preview
 }
 
 serve(async (req) => {
@@ -53,127 +34,8 @@ serve(async (req) => {
     const { prompt } = await req.json();
     console.log('🚀 Starting React Native/Expo app generation for:', prompt);
 
-    // === AGENT 1: PLANNER AGENT (ChatGPT-4) ===
-    console.log('🤖 Agent 1: Planner Agent - Creating app plan...');
-    const plannerResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
-        messages: [
-          {
-            role: 'system',
-            content: `You are the Planner Agent for MyPip's React Native/Expo app builder framework.
-
-Your job: Interpret user prompts and create a clear, structured plan for a React Native mobile app using Expo SDK.
-
-IMPORTANT: Always plan for Expo/React Native mobile apps only. Use expo-router for navigation.
-
-Return a JSON object with this EXACT structure:
-{
-  "appName": "descriptive app name",
-  "appId": "app.example.appname", 
-  "description": "brief app description",
-  "screens": [
-    {
-      "name": "ScreenName",
-      "route": "/route-path",
-      "purpose": "what this screen does",
-      "features": ["feature1", "feature2"]
-    }
-  ],
-  "navigation": {
-    "type": "tabs|stack|drawer",
-    "structure": "describe navigation flow"
-  },
-  "apiRequirements": ["list of any APIs needed"],
-  "dataModels": ["User", "Product", "etc"]
-}
-
-Focus on mobile-first design patterns and native mobile experiences.`
-          },
-          {
-            role: 'user',
-            content: `Create a React Native/Expo mobile app plan for: ${prompt}`
-          }
-        ],
-        temperature: 0.3,
-      }),
-    });
-
-    const plannerData = await plannerResponse.json();
-    
-    // Extract JSON from OpenAI response (handle markdown code blocks)
-    let plannerContent = plannerData.choices[0].message.content;
-    const jsonMatch = plannerContent.match(/\{[\s\S]*\}/);
-    const plannerOutput = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(plannerContent);
-    console.log('✅ Planner Agent completed:', plannerOutput);
-
-    // === AGENT 2: UI COMPOSER AGENT (ChatGPT-4) ===
-    console.log('🎨 Agent 2: UI Composer Agent - Creating layouts and navigation...');
-    const uiComposerResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
-        messages: [
-          {
-            role: 'system',
-            content: `You are the UI Composer Agent for MyPip's React Native/Expo app builder.
-
-Your job: Translate the planner's output into layouts and navigation using expo-router file-based routing.
-
-IMPORTANT: 
-- Use ONLY Expo and React Native components
-- Use expo-router for navigation (file-based routing)
-- Design for mobile screens and touch interactions
-- Use React Native styling (StyleSheet or inline styles)
-
-Return a JSON object with:
-{
-  "layoutStructure": {
-    "appLayout": "description of overall app layout",
-    "screenLayouts": {
-      "ScreenName": "detailed layout description for each screen"
-    }
-  },
-  "componentHierarchy": {
-    "components": ["list of reusable components needed"]
-  },
-  "navigationFlow": {
-    "routerSetup": "expo-router configuration needed",
-    "navigationPatterns": "how users navigate between screens"
-  }
-}
-
-Focus on mobile UX patterns like tabs, modals, gestures, and touch-friendly interfaces.`
-          },
-          {
-            role: 'user',
-            content: `Create UI layouts and navigation for this React Native app plan: ${JSON.stringify(plannerOutput)}`
-          }
-        ],
-        temperature: 0.3,
-      }),
-    });
-
-    const uiComposerData = await uiComposerResponse.json();
-    
-    // Extract JSON from OpenAI response (handle markdown code blocks)
-    let uiComposerContent = uiComposerData.choices[0].message.content;
-    const uiJsonMatch = uiComposerContent.match(/\{[\s\S]*\}/);
-    const uiComposerOutput = uiJsonMatch ? JSON.parse(uiJsonMatch[0]) : JSON.parse(uiComposerContent);
-    console.log('✅ UI Composer Agent completed:', uiComposerOutput);
-
-    // === AGENT 3: CODE GENERATOR AGENT (Claude SDK) ===
-    console.log('⚡ Agent 3: Code Generator Agent - Writing full codebase...');
-    const codeGeneratorResponse = await fetch('https://api.anthropic.com/v1/messages', {
+    // Simple Claude SDK approach - single call to generate everything
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${anthropicApiKey}`,
@@ -186,79 +48,53 @@ Focus on mobile UX patterns like tabs, modals, gestures, and touch-friendly inte
         messages: [
           {
             role: 'user',
-            content: `You are the Code Generator Agent for MyPip's React Native/Expo app builder.
+            content: `Create a complete React Native/Expo mobile app for: "${prompt}"
 
-Your job: Write the COMPLETE working codebase using Expo SDK based on the planner and UI composer outputs.
+Generate a production-ready React Native app with Expo. Return ONLY a valid JSON object with this structure:
 
-PLANNER OUTPUT: ${JSON.stringify(plannerOutput)}
-UI COMPOSER OUTPUT: ${JSON.stringify(uiComposerOutput)}
-
-Generate a COMPLETE React Native/Expo app with this EXACT file structure:
-
-/my-app
-├── app/
-│   ├── index.js ← home screen  
-│   ├── _layout.js ← root layout
-│   └── [other screens].js ← auto-generated routes
-├── assets/ ← images/icons (describe what's needed)
-├── components/ ← reusable components
-├── App.js ← registers expo-router
-├── package.json ← includes expo, react-native, expo-router, etc.
-├── app.json ← Expo app config
-├── eas.json ← EAS build config
-└── README.md ← install + run instructions
+{
+  "appName": "descriptive app name",
+  "appId": "app.mypip.appname",
+  "description": "brief app description",
+  "generatedFiles": {
+    "package.json": "complete package.json with expo, react-native, expo-router dependencies",
+    "app.json": "complete expo app.json config",
+    "eas.json": "complete eas.json build config",
+    "App.js": "expo-router entry point",
+    "app/index.js": "main home screen with working UI",
+    "app/_layout.js": "expo-router layout",
+    "README.md": "install and run instructions"
+  },
+  "installInstructions": ["npm install", "npx expo start", "scan QR code"],
+  "summary": "brief description of generated app",
+  "previewCode": "HTML/CSS/JS code to show a visual preview of the app in a phone mockup"
+}
 
 REQUIREMENTS:
 - Use Expo SDK ~50.0.0, React Native 0.73.0, expo-router ^3.0.0
-- Include expo-router for navigation (main: "node_modules/expo-router/entry")
-- Write production-ready code that works with 'npx expo start'
-- Use React Native components only (View, Text, TouchableOpacity, etc.)
-- Include proper StyleSheet styling
-- Make the app immediately installable and runnable
-- Include install and run instructions in README.md
-- Set up proper app.json with name and slug
-- Add scripts: "dev": "expo start --tunnel", "postinstall": "npx expo install"
+- Make the app functional with working navigation and UI
+- Include proper React Native styling with StyleSheet
+- Generate a phone preview HTML that visually shows the app interface
+- Make the preview code work as a standalone HTML file with CSS and JS
+- The preview should look like a real mobile app interface
 
-Return ONLY a valid JSON object:
-{
-  "appName": "${plannerOutput.appName}",
-  "appId": "${plannerOutput.appId}",
-  "description": "${plannerOutput.description}",
-  "generatedFiles": {
-    "package.json": "complete package.json content",
-    "app.json": "complete app.json content", 
-    "eas.json": "complete eas.json content",
-    "App.js": "complete App.js content",
-    "app/index.js": "complete home screen content",
-    "app/_layout.js": "complete layout content",
-    "README.md": "complete install/run instructions"
-  },
-  "installInstructions": ["step 1", "step 2", "step 3"],
-  "summary": "Brief description of the generated app"
-}
-
-Make the code production-ready and immediately runnable!`
+Make everything production-ready and immediately runnable with 'npx expo start'!`
           }
         ]
       }),
     });
 
-    const codeGeneratorData = await codeGeneratorResponse.json();
+    const data = await response.json();
     let finalApp: ExpoAppStructure;
     
     try {
       // Extract JSON from Claude's response
       let content = '';
-      if (codeGeneratorData.content && Array.isArray(codeGeneratorData.content) && codeGeneratorData.content[0]) {
-        content = codeGeneratorData.content[0].text;
-      } else if (codeGeneratorData.content && typeof codeGeneratorData.content === 'string') {
-        content = codeGeneratorData.content;
-      } else if (codeGeneratorData.message && codeGeneratorData.message.content) {
-        content = codeGeneratorData.message.content;
-      } else if (typeof codeGeneratorData === 'string') {
-        content = codeGeneratorData;
+      if (data.content && Array.isArray(data.content) && data.content[0]) {
+        content = data.content[0].text;
+      } else if (data.content && typeof data.content === 'string') {
+        content = data.content;
       } else {
-        console.error('Unexpected Claude response format:', JSON.stringify(codeGeneratorData, null, 2));
         throw new Error('Unexpected response format from Claude');
       }
       
@@ -267,23 +103,21 @@ Make the code production-ready and immediately runnable!`
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         finalApp = JSON.parse(jsonMatch[0]);
-        console.log('✅ Code Generator Agent completed successfully');
+        console.log('✅ App generated successfully with Claude SDK');
       } else {
         throw new Error('No valid JSON found in response');
       }
     } catch (parseError) {
       console.error('Failed to parse Claude response:', parseError);
       
-      // Create a fallback React Native app structure
-      const appName = plannerOutput.appName || `${prompt} App`;
-      const appId = plannerOutput.appId || `app.mypip.${prompt.toLowerCase().replace(/\s+/g, '')}`;
+      // Create a fallback app structure
+      const appName = `${prompt} App`;
+      const appId = `app.mypip.${prompt.toLowerCase().replace(/\s+/g, '')}`;
       
       finalApp = {
         appName,
         appId,
-        description: plannerOutput.description || `A React Native app for ${prompt}`,
-        plannerOutput,
-        uiComposerOutput,
+        description: `A React Native app for ${prompt}`,
         generatedFiles: {
           'package.json': JSON.stringify({
             "name": "my-app",
@@ -357,7 +191,7 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>${appName}</Text>
-      <Text style={styles.subtitle}>${plannerOutput.description || 'Welcome to your new app!'}</Text>
+      <Text style={styles.subtitle}>Welcome to your new app!</Text>
       <TouchableOpacity style={styles.button} onPress={() => alert('App is working!')}>
         <Text style={styles.buttonText}>Get Started</Text>
       </TouchableOpacity>
@@ -408,7 +242,7 @@ export default function RootLayout() {
 }`,
           'README.md': `# ${appName}
 
-${plannerOutput.description || 'A React Native app built with Expo.'}
+A React Native app built with Expo.
 
 ## Installation & Setup
 
@@ -429,7 +263,7 @@ ${plannerOutput.description || 'A React Native app built with Expo.'}
 
 ## Features
 
-${plannerOutput.screens ? plannerOutput.screens.map(screen => `- ${screen.name}: ${screen.purpose}`).join('\n') : '- Home screen with welcome message'}
+- Home screen with welcome message
 
 ## Built with
 
@@ -447,11 +281,36 @@ This app is ready to run! Just follow the installation steps above and start bui
           "npx expo start",
           "Scan QR code with Expo Go app or use simulator"
         ],
-        summary: `Generated a complete React Native/Expo app: ${appName}. Includes working navigation, screens, and is ready to run with 'npx expo start'.`
+        summary: `Generated a complete React Native/Expo app: ${appName}. Ready to run with expo start.`,
+        previewCode: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${appName} Preview</title>
+    <style>
+        body { margin: 0; padding: 20px; background: #f0f0f0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+        .phone { width: 375px; height: 667px; background: white; border-radius: 30px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .screen { padding: 40px 20px; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .title { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+        .subtitle { font-size: 16px; color: #666; margin-bottom: 30px; }
+        .button { background: #007AFF; color: white; padding: 10px 20px; border-radius: 8px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <div class="screen">
+            <h1 class="title">${appName}</h1>
+            <p class="subtitle">Welcome to your new app!</p>
+            <button class="button" onclick="alert('App is working!')">Get Started</button>
+        </div>
+    </div>
+</body>
+</html>`
       };
     }
 
-    console.log('🎉 All three agents completed! Final app generated:', {
+    console.log('🎉 App generated successfully:', {
       appName: finalApp.appName,
       description: finalApp.description,
       filesGenerated: Object.keys(finalApp.generatedFiles).length
@@ -462,7 +321,7 @@ This app is ready to run! Just follow the installation steps above and start bui
     });
 
   } catch (error) {
-    console.error('❌ Error in agentic framework:', error);
+    console.error('❌ Error generating app:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

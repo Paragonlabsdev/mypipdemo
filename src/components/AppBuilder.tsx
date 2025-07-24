@@ -260,38 +260,45 @@ const AppBuilder = () => {
                         </div>
                       </div>
 
-                      <div className="absolute top-10 left-0 right-0 bottom-8 flex flex-col overflow-hidden">
-                        {generatedApp ? (
-                          <div className="flex-1 p-3 overflow-y-auto">
-                            <div className="space-y-2">
-                              <div className="text-xs bg-blue-50 p-2 rounded border border-blue-200">
-                                <div className="font-medium text-blue-800 mb-1">📱 {generatedApp.appName}</div>
-                                <div className="text-blue-600 text-[10px]">{generatedApp.description}</div>
-                              </div>
-                              
-                              <div className="text-xs bg-green-50 p-2 rounded border border-green-200">
-                                <div className="font-medium text-green-800 mb-1">✅ Ready to Install</div>
-                                <div className="text-green-600 text-[10px]">
-                                  {generatedApp.installInstructions?.slice(0, 2).join(' → ') || 'npm install → npx expo start'}
-                                </div>
-                              </div>
-                              
-                              <div className="text-xs bg-purple-50 p-2 rounded border border-purple-200">
-                                <div className="font-medium text-purple-800 mb-1">📁 Files Generated</div>
-                                <div className="text-purple-600 text-[10px]">
-                                  {generatedApp.generatedFiles ? Object.keys(generatedApp.generatedFiles).length : 0} files ready
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex-1 flex items-center justify-center">
-                            <div className="text-center text-gray-500 p-4">
-                              <div className="text-sm font-medium">{appContent.title}</div>
-                              <div className="text-xs mt-1">{appContent.subtitle}</div>
-                            </div>
-                          </div>
-                        )}
+                       <div className="absolute top-10 left-0 right-0 bottom-8 flex flex-col overflow-hidden">
+                         {generatedApp && generatedApp.previewCode ? (
+                           <iframe
+                             srcDoc={generatedApp.previewCode}
+                             className="w-full h-full border-0"
+                             title="App Preview"
+                             style={{ background: 'white' }}
+                           />
+                         ) : generatedApp ? (
+                           <div className="flex-1 p-3 overflow-y-auto">
+                             <div className="space-y-2">
+                               <div className="text-xs bg-blue-50 p-2 rounded border border-blue-200">
+                                 <div className="font-medium text-blue-800 mb-1">📱 {generatedApp.appName}</div>
+                                 <div className="text-blue-600 text-[10px]">{generatedApp.description}</div>
+                               </div>
+                               
+                               <div className="text-xs bg-green-50 p-2 rounded border border-green-200">
+                                 <div className="font-medium text-green-800 mb-1">✅ Ready to Install</div>
+                                 <div className="text-green-600 text-[10px]">
+                                   {generatedApp.installInstructions?.slice(0, 2).join(' → ') || 'npm install → npx expo start'}
+                                 </div>
+                               </div>
+                               
+                               <div className="text-xs bg-purple-50 p-2 rounded border border-purple-200">
+                                 <div className="font-medium text-purple-800 mb-1">📁 Files Generated</div>
+                                 <div className="text-purple-600 text-[10px]">
+                                   {generatedApp.generatedFiles ? Object.keys(generatedApp.generatedFiles).length : 0} files ready
+                                 </div>
+                               </div>
+                             </div>
+                           </div>
+                         ) : (
+                           <div className="flex-1 flex items-center justify-center">
+                             <div className="text-center text-gray-500 p-4">
+                               <div className="text-sm font-medium">{appContent.title}</div>
+                               <div className="text-xs mt-1">{appContent.subtitle}</div>
+                             </div>
+                           </div>
+                         )}
                       </div>
                     </div>
                   </div>
