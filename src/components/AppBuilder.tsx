@@ -45,53 +45,27 @@ const generateProjectName = async (prompt: string): Promise<string> => {
   }
 };
 
-// Component to render generated HTML code
+// Component to render generated HTML code with minimal interference
 const HtmlRenderer = ({ htmlCode }: { htmlCode: string }) => {
   if (!htmlCode) return null;
 
-  // Inject viewport meta tag and styling to ensure proper mobile scaling and full interactivity
+  // Only inject essential viewport meta tag, no interfering CSS
   const enhancedHtml = htmlCode.replace(
     /<head>/i,
     `<head>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-      <style>
-        * { 
-          box-sizing: border-box; 
-        }
-        html, body { 
-          margin: 0; 
-          padding: 0; 
-          width: 100%; 
-          height: 100vh; 
-          overflow-x: hidden;
-          font-size: 14px;
-        }
-        body { 
-          display: flex; 
-          flex-direction: column;
-          min-height: 100vh;
-        }
-        .container, .main, .app { 
-          flex: 1; 
-          display: flex; 
-          flex-direction: column;
-          max-width: 100%;
-        }
-        button {
-          cursor: pointer;
-        }
-      </style>`
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">`
   );
 
   return (
     <iframe
       srcDoc={enhancedHtml}
       className="w-full h-full border-none"
-      sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-popups allow-modals allow-downloads"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-popups allow-modals"
       title="Generated App Preview"
       style={{ 
         pointerEvents: 'auto',
-        touchAction: 'auto'
+        touchAction: 'auto',
+        background: 'white'
       }}
     />
   );
@@ -143,17 +117,29 @@ const AppBuilder = () => {
   const generateApp = async (prompt: string) => {
     setIsGenerating(true);
     try {
-      // Generate app directly with Claude
+      console.log('Starting app generation for:', prompt);
+      
+      // Generate app with Claude Sonnet 4
       const { data, error } = await supabase.functions.invoke('generate-app-claude', {
         body: { prompt: prompt.trim() }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
 
       if (data?.success && data?.code) {
+        console.log('App generated successfully, code length:', data.code.length);
+        
+        // Validate that we have complete HTML
+        if (!data.code.includes('</html>')) {
+          throw new Error('Generated app appears to be incomplete');
+        }
+        
         setGeneratedCode(data.code);
         
-        // Step 3: Save project to database
+        // Save project to database
         try {
           const userIP = await getUserIP();
           const projectName = await generateProjectName(prompt);
@@ -168,29 +154,30 @@ const AppBuilder = () => {
           });
         } catch (saveError) {
           console.error('Failed to save project:', saveError);
-          // Don't fail the whole generation if saving fails
+          // Don't fail generation if saving fails
         }
 
         setChatHistory(prev => [...prev, { 
           type: 'assistant', 
-          content: "I've generated your mobile app! You can see the preview in the phone mockup and download the code if needed." 
+          content: "Your app is ready! You can interact with it in the preview - all buttons and features should work." 
         }]);
+        
         toast({
-          title: "Success!",
-          description: "Your app has been generated successfully",
+          title: "App Generated!",
+          description: "Your fully functional app is ready to use",
         });
       } else {
         throw new Error(data?.error || 'Failed to generate app');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('App generation error:', error);
       setChatHistory(prev => [...prev, { 
         type: 'assistant', 
-        content: `Sorry, I couldn't generate your app: ${error.message}. Please try again.` 
+        content: `Failed to generate app: ${error.message}. Please try again with a different prompt.` 
       }]);
       toast({
         title: "Generation Failed",
-        description: error.message || "Failed to generate app. Please try again.",
+        description: error.message || "Failed to generate app",
         variant: "destructive",
       });
     } finally {
