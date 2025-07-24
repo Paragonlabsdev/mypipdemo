@@ -123,8 +123,7 @@ const AppBuilder = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
-  const [isApiModalOpen, setIsApiModalOpen] = useState(false);
-  const [selectedIntegration, setSelectedIntegration] = useState<string>("");
+  const [isGithubModalOpen, setIsGithubModalOpen] = useState(false);
   const [generatedCode, setGeneratedCode] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const isMobile = useIsMobile();
@@ -283,6 +282,14 @@ const AppBuilder = () => {
               </SheetTrigger>
               <span className="text-sm font-medium">myPip Builder</span>
               <div className="flex items-center gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-xs"
+                  onClick={() => setIsGithubModalOpen(true)}
+                >
+                  <Github className="h-4 w-4" />
+                </Button>
                 <Button variant="ghost" size="sm" className="text-xs">
                   <Share className="h-4 w-4" />
                 </Button>
@@ -488,6 +495,14 @@ const AppBuilder = () => {
                 <span className="text-sm text-muted-foreground">myPip Builder</span>
               </div>
               <div className="flex items-center gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-xs"
+                  onClick={() => setIsGithubModalOpen(true)}
+                >
+                  <Github className="h-4 w-4" />
+                </Button>
                 {generatedCode && (
                   <Button 
                     size="sm" 
@@ -518,32 +533,19 @@ const AppBuilder = () => {
                    <PopoverContent className="w-80 p-4" align="end">
                      <div className="space-y-4">
                        <h3 className="font-semibold text-sm">Integrations</h3>
-                       <div className="space-y-3">
-                         <div 
-                           className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/50 cursor-pointer"
-                           onClick={() => { setSelectedIntegration("GitHub"); setIsApiModalOpen(false); }}
-                         >
-                           <div className="flex items-center gap-3">
-                             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
-                               <Github className="h-4 w-4 text-white" />
-                             </div>
-                             <span className="text-sm font-medium">GitHub</span>
-                           </div>
-                           <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg">Connect</Button>
-                         </div>
-                         <div 
-                           className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/50 cursor-pointer"
-                           onClick={() => { setSelectedIntegration("Supabase"); setIsApiModalOpen(true); }}
-                         >
-                           <div className="flex items-center gap-3">
-                             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
-                               <Database className="h-4 w-4 text-white" />
-                             </div>
-                             <span className="text-sm font-medium">Supabase</span>
-                           </div>
-                           <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg">Add API</Button>
-                         </div>
-                       </div>
+                        <div className="space-y-3">
+                          <div 
+                            className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/50 cursor-pointer"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
+                                <Database className="h-4 w-4 text-white" />
+                              </div>
+                              <span className="text-sm font-medium">Supabase</span>
+                            </div>
+                            <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg">Connected</Button>
+                          </div>
+                        </div>
                      </div>
                    </PopoverContent>
                  </Popover>
@@ -667,22 +669,24 @@ const AppBuilder = () => {
         onOpenChange={setIsAccountModalOpen} 
       />
 
-      <Dialog open={isApiModalOpen} onOpenChange={setIsApiModalOpen}>
+      <Dialog open={isGithubModalOpen} onOpenChange={setIsGithubModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Add {selectedIntegration} API</DialogTitle>
+            <DialogTitle>Connect GitHub</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="apiKey">API Key</Label>
-              <Input id="apiKey" placeholder="Enter your API key" className="mt-1" />
-            </div>
+            <p className="text-muted-foreground">
+              Connect your GitHub account to save and sync your projects.
+            </p>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsApiModalOpen(false)}>
+              <Button variant="outline" onClick={() => setIsGithubModalOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={() => setIsApiModalOpen(false)}>
-                Add API
+              <Button 
+                onClick={() => setIsGithubModalOpen(false)}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Connect GitHub
               </Button>
             </div>
           </div>
