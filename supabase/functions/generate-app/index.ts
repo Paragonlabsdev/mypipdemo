@@ -1,20 +1,15 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
+const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
 
 // Validate API key on startup
-if (!anthropicApiKey) {
-  console.error('❌ ANTHROPIC_API_KEY is not set');
-  throw new Error('ANTHROPIC_API_KEY environment variable is required');
+if (!geminiApiKey) {
+  console.error('❌ GEMINI_API_KEY is not set');
+  throw new Error('GEMINI_API_KEY environment variable is required');
 }
 
-if (!anthropicApiKey.startsWith('sk-ant-')) {
-  console.error('❌ Invalid ANTHROPIC_API_KEY format. Expected to start with "sk-ant-"');
-  throw new Error('Invalid ANTHROPIC_API_KEY format');
-}
-
-console.log('✅ ANTHROPIC_API_KEY configured correctly');
+console.log('✅ GEMINI_API_KEY configured correctly');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -130,14 +125,11 @@ serve(async (req) => {
     console.log('🚀 Generating React Native app for:', sanitizedPrompt.substring(0, 100) + (sanitizedPrompt.length > 100 ? '...' : ''));
     console.log(`📊 Request details: IP=${clientIP}, promptLength=${sanitizedPrompt.length}`);
 
-    // Prepare Claude API request
-    const claudeRequestBody = {
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 4000,
-      messages: [
-        {
-          role: 'user',
-          content: `Create a React Native mobile app for: "${sanitizedPrompt}"
+    // Prepare Gemini API request
+    const geminiRequestBody = {
+      contents: [{
+        parts: [{
+          text: `Create a React Native mobile app for: "${sanitizedPrompt}"
 
 Generate a complete working React Native app with Expo. The app should have:
 - A beautiful, functional UI
@@ -170,12 +162,17 @@ Return ONLY valid JSON without any other text:
   "previewCode": "HTML code showing app preview",
   "summary": "Brief summary"
 }`
-        }
-      ]
+        }]
+      }],
+      generationConfig: {
+        temperature: 0.7,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 4000,
+      }
     };
 
-    console.log('📤 Sending request to Claude API...');
-    console.log(`📋 Model: ${claudeRequestBody.model}, MaxTokens: ${claudeRequestBody.max_tokens}`);
+    console.log('📤 Sending request to Gemini API...');
 
     // Add timeout to the fetch request
     const controller = new AbortController();
@@ -183,86 +180,74 @@ Return ONLY valid JSON without any other text:
 
     let response;
     try {
-      response = await fetch('https://api.anthropic.com/v1/messages', {
+      response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${anthropicApiKey}`,
           'Content-Type': 'application/json',
-          'anthropic-version': '2023-06-01',
-          'User-Agent': 'Supabase-Edge-Function/1.0'
         },
-        body: JSON.stringify(claudeRequestBody),
+        body: JSON.stringify(geminiRequestBody),
         signal: controller.signal
       });
     } catch (fetchError) {
       clearTimeout(timeoutId);
       if (fetchError.name === 'AbortError') {
-        console.error('❌ Claude API request timed out');
-        throw new Error('Claude API request timed out after 60 seconds');
+        console.error('❌ Gemini API request timed out');
+        throw new Error('Gemini API request timed out after 60 seconds');
       }
-      console.error('❌ Network error calling Claude API:', fetchError.message);
+      console.error('❌ Network error calling Gemini API:', fetchError.message);
       throw new Error(`Network error: ${fetchError.message}`);
     }
     
     clearTimeout(timeoutId);
     
-    console.log(`📡 Claude API response status: ${response.status}`);
-    console.log(`📊 Response headers: ${JSON.stringify(Object.fromEntries(response.headers.entries()))}`);
+    console.log(`📡 Gemini API response status: ${response.status}`);
 
     let data;
     try {
       data = await response.json();
     } catch (jsonError) {
-      console.error('❌ Failed to parse Claude API response as JSON:', jsonError.message);
-      throw new Error('Invalid JSON response from Claude API');
+      console.error('❌ Failed to parse Gemini API response as JSON:', jsonError.message);
+      throw new Error('Invalid JSON response from Gemini API');
     }
 
     // Check for API errors first
     if (!response.ok) {
-      console.error('❌ Claude API error response:', JSON.stringify(data, null, 2));
+      console.error('❌ Gemini API error response:', JSON.stringify(data, null, 2));
       
       // Handle specific error types
       if (response.status === 401) {
-        console.error('❌ Authentication failed - check ANTHROPIC_API_KEY');
+        console.error('❌ Authentication failed - check GEMINI_API_KEY');
         throw new Error('Authentication failed: Invalid API key');
       } else if (response.status === 429) {
         console.error('❌ Rate limit exceeded');
-        throw new Error('Rate limit exceeded: Too many requests to Claude API');
+        throw new Error('Rate limit exceeded: Too many requests to Gemini API');
       } else if (response.status === 400) {
-        console.error('❌ Bad request to Claude API');
-        throw new Error(`Bad request: ${data.error?.message || 'Invalid request to Claude API'}`);
+        console.error('❌ Bad request to Gemini API');
+        throw new Error(`Bad request: ${data.error?.message || 'Invalid request to Gemini API'}`);
       } else {
-        throw new Error(`Claude API error (${response.status}): ${data.error?.message || 'Unknown error'}`);
+        throw new Error(`Gemini API error (${response.status}): ${data.error?.message || 'Unknown error'}`);
       }
     }
 
-    console.log('✅ Claude response received successfully');
-    console.log(`📊 Response details: status=${response.status}, hasContent=${!!data.content}, contentType=${Array.isArray(data.content) ? 'array' : typeof data.content}`);
+    console.log('✅ Gemini response received successfully');
 
-    // Extract content from Claude response
+    // Extract content from Gemini response
     let content = '';
-    if (data.content && Array.isArray(data.content)) {
-      content = data.content
-        .filter(item => item.type === 'text')
-        .map(item => item.text)
+    if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+      content = data.candidates[0].content.parts
+        .map((part: any) => part.text)
         .join('');
-      console.log(`📝 Extracted content from array: ${content.length} characters`);
-    } else if (data.content && typeof data.content === 'string') {
-      content = data.content;
-      console.log(`📝 Extracted string content: ${content.length} characters`);
-    } else if (data.content && data.content.text) {
-      content = data.content.text;
-      console.log(`📝 Extracted text property: ${content.length} characters`);
+      console.log(`📝 Extracted content: ${content.length} characters`);
     } else {
-      console.error('❌ No valid content found in Claude response');
+      console.error('❌ No valid content found in Gemini response');
       console.error('📋 Full response structure:', JSON.stringify(data, null, 2));
-      throw new Error('No valid content in Claude response');
+      throw new Error('No valid content in Gemini response');
     }
 
     if (!content || content.length < 10) {
       console.error('❌ Content too short or empty');
       console.error('📋 Raw content:', content);
-      throw new Error('Claude response content is empty or too short');
+      throw new Error('Gemini response content is empty or too short');
     }
 
     console.log('📄 Content preview:', content.substring(0, 200) + (content.length > 200 ? '...' : ''));
@@ -272,7 +257,7 @@ Return ONLY valid JSON without any other text:
     
     let appData;
     
-    // Strategy 1: Try to parse entire content as JSON (Claude should return pure JSON)
+    // Strategy 1: Try to parse entire content as JSON
     try {
       appData = JSON.parse(content.trim());
       console.log('✅ Parsed entire content as JSON');
@@ -309,19 +294,11 @@ Return ONLY valid JSON without any other text:
       console.error('❌ No valid JSON found in response');
       console.error('📋 Content sample (first 1000 chars):', content.substring(0, 1000));
       console.error('📋 Content sample (last 500 chars):', content.substring(Math.max(0, content.length - 500)));
-      throw new Error(`Failed to extract valid JSON from Claude response. Content length: ${content.length}`);
+      throw new Error(`Failed to extract valid JSON from Gemini response. Content length: ${content.length}`);
     }
 
     console.log('✅ Successfully extracted app data');
     console.log(`📊 App data keys: ${Object.keys(appData).join(', ')}`);
-    
-    // Validate required fields
-    if (!appData.appName && !appData.name) {
-      console.log('⚠️ No appName found, will generate default');
-    }
-    if (!appData.generatedFiles || Object.keys(appData.generatedFiles).length === 0) {
-      console.log('⚠️ No generatedFiles found, creating minimal structure');
-    }
 
     // Build final app object with enhanced validation and defaults
     const appName = appData.appName || appData.name || `${sanitizedPrompt.charAt(0).toUpperCase() + sanitizedPrompt.slice(1)} App`;
