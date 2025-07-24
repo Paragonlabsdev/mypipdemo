@@ -18,6 +18,33 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import React from "react";
 
+// Helper function to get user IP
+const getUserIP = async (): Promise<string> => {
+  try {
+    const response = await fetch('https://api.ipify.org?format=json');
+    const data = await response.json();
+    return data.ip;
+  } catch (error) {
+    console.error('Error getting IP:', error);
+    return 'unknown';
+  }
+};
+
+// Helper function to generate project name
+const generateProjectName = async (prompt: string): Promise<string> => {
+  try {
+    const { data, error } = await supabase.functions.invoke('generate-project-name', {
+      body: { prompt }
+    });
+    
+    if (error) throw error;
+    return data?.projectName || `Project ${Date.now()}`;
+  } catch (error) {
+    console.error('Error generating project name:', error);
+    return `Project ${Date.now()}`;
+  }
+};
+
 // Component to render generated HTML code
 const HtmlRenderer = ({ htmlCode }: { htmlCode: string }) => {
   if (!htmlCode) return null;
@@ -50,28 +77,71 @@ const AppBuilder = () => {
   const isMobile = useIsMobile();
   const { toast } = useToast();
 
-  // Handle initial prompt by adding it to chat history
+  // Handle initial prompt and saved project loading
   useEffect(() => {
-    if (initialPrompt && promptCount === 0) {
+    const savedCode = searchParams.get("code");
+    const projectId = searchParams.get("projectId");
+    
+    // If loading a saved project
+    if (savedCode && projectId) {
+      setGeneratedCode(savedCode);
+      if (initialPrompt) {
+        const validatedPrompt = validateInput(initialPrompt.trim());
+        setChatHistory([
+          { type: 'user', content: validatedPrompt },
+          { type: 'assistant', content: "I've loaded your saved project! You can see the preview in the phone mockup." }
+        ]);
+        setPromptCount(1);
+      }
+    } else if (initialPrompt && promptCount === 0) {
+      // Auto-generate new app from initial prompt
       const validatedPrompt = validateInput(initialPrompt.trim());
       setChatHistory([{ type: 'user', content: validatedPrompt }]);
       setPromptCount(1);
-      // Auto-generate app from initial prompt
       generateApp(validatedPrompt);
     }
-  }, [initialPrompt]);
+  }, [initialPrompt, searchParams]);
 
   const generateApp = async (prompt: string) => {
     setIsGenerating(true);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-app-claude', {
+      // Step 1: Enhance the prompt with Claude Sonnet 3.7
+      const { data: enhanceData, error: enhanceError } = await supabase.functions.invoke('enhance-prompt-claude', {
         body: { prompt: prompt.trim() }
+      });
+
+      if (enhanceError) throw enhanceError;
+
+      const enhancedPrompt = enhanceData?.enhancedPrompt || prompt.trim();
+
+      // Step 2: Generate app with the enhanced prompt
+      const { data, error } = await supabase.functions.invoke('generate-app-claude', {
+        body: { prompt: enhancedPrompt }
       });
 
       if (error) throw error;
 
       if (data?.success && data?.code) {
         setGeneratedCode(data.code);
+        
+        // Step 3: Save project to database
+        try {
+          const userIP = await getUserIP();
+          const projectName = await generateProjectName(prompt);
+          
+          await supabase.functions.invoke('save-project', {
+            body: {
+              projectName,
+              prompt: prompt.trim(),
+              generatedCode: data.code,
+              userIP
+            }
+          });
+        } catch (saveError) {
+          console.error('Failed to save project:', saveError);
+          // Don't fail the whole generation if saving fails
+        }
+
         setChatHistory(prev => [...prev, { 
           type: 'assistant', 
           content: "I've generated your mobile app! You can see the preview in the phone mockup and download the code if needed." 
@@ -179,12 +249,6 @@ const AppBuilder = () => {
             <div className="flex-1 flex flex-col">
               {/* Chat History */}
               <div className="flex-1 p-4 space-y-4 overflow-y-auto bg-background">
-                {initialPrompt && (
-                  <div className="bg-muted p-3 rounded-lg">
-                    <p className="text-sm">{initialPrompt}</p>
-                  </div>
-                )}
-                
                 {chatHistory.map((message, index) => (
                   <div key={index} className={`p-3 rounded-lg ${
                     message.type === 'user' 
@@ -195,11 +259,11 @@ const AppBuilder = () => {
                   </div>
                 ))}
                 
-                {isGenerating && (
-                  <div className="bg-muted text-muted-foreground mr-4 p-3 rounded-lg">
-                    <p className="text-sm">Generating your app with Claude...</p>
-                  </div>
-                )}
+                 {isGenerating && (
+                   <div className="bg-muted text-muted-foreground mr-4 p-3 rounded-lg">
+                     <p className="text-sm">myPip is building your app...</p>
+                   </div>
+                 )}
               </div>
 
               {/* App Preview */}
@@ -223,13 +287,18 @@ const AppBuilder = () => {
                          <div className="w-full h-full overflow-auto">
                            <HtmlRenderer htmlCode={generatedCode} />
                          </div>
-                       ) : isGenerating ? (
-                         <div className="flex flex-1 items-center justify-center h-full">
-                           <div className="text-center text-gray-600">
-                             <div className="text-xs font-medium">Generating...</div>
-                             <div className="text-xs mt-1">Claude is building your app</div>
-                           </div>
-                         </div>
+                        ) : isGenerating ? (
+                          <div className="flex flex-1 items-center justify-center h-full">
+                            <div className="text-center text-gray-600">
+                              <img 
+                                src="/lovable-uploads/1a2e7b31-f804-4664-91f0-25cdce4a91f0.png" 
+                                alt="Loading" 
+                                className="w-12 h-12 mx-auto mb-3 breathe-animation"
+                              />
+                              <div className="text-xs font-medium">Generating...</div>
+                              <div className="text-xs mt-1">myPip is building your app</div>
+                            </div>
+                          </div>
                        ) : (
                          <div className="flex flex-1 items-center justify-center h-full">
                            <div className="text-center text-gray-500">
@@ -296,12 +365,6 @@ const AppBuilder = () => {
             </div>
             
             <div className="flex-1 p-4 space-y-4 overflow-y-auto">
-              {initialPrompt && (
-                <div className="bg-muted p-3 rounded-lg">
-                  <p className="text-sm">{initialPrompt}</p>
-                </div>
-              )}
-              
               {chatHistory.map((message, index) => (
                 <div key={index} className={`p-3 rounded-lg ${
                   message.type === 'user' 
@@ -312,11 +375,11 @@ const AppBuilder = () => {
                 </div>
               ))}
               
-              {isGenerating && (
-                <div className="bg-muted text-muted-foreground mr-4 p-3 rounded-lg">
-                  <p className="text-sm">Generating your app with Claude...</p>
-                </div>
-              )}
+               {isGenerating && (
+                 <div className="bg-muted text-muted-foreground mr-4 p-3 rounded-lg">
+                   <p className="text-sm">myPip is building your app...</p>
+                 </div>
+               )}
             </div>
 
             <div className="p-4 bg-background rounded-3xl border border-border mx-4 mb-4">
@@ -469,16 +532,22 @@ const AppBuilder = () => {
                    Preview on device
                  </Button>
 
-                 <Button
-                   onClick={() => setIsAccountModalOpen(true)}
-                   variant="ghost"
-                   size="sm"
-                   className="w-8 h-8 rounded-full p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
-                 >
-                   <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                     <User className="h-4 w-4 text-white" />
-                   </div>
-                 </Button>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-8 h-8 rounded-full p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                          <User className="h-4 w-4 text-white" />
+                        </div>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80 p-4" align="end" side="bottom">
+                      <AccountModal isOpen={true} onOpenChange={() => {}} />
+                    </PopoverContent>
+                  </Popover>
               </div>
             </div>
 
@@ -507,16 +576,18 @@ const AppBuilder = () => {
                          <div className="w-full h-full overflow-auto">
                            <HtmlRenderer htmlCode={generatedCode} />
                          </div>
-                       ) : isGenerating ? (
-                         <div className="flex flex-1 items-center justify-center h-full">
-                           <div className="text-center text-gray-600">
-                             <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full flex items-center justify-center animate-pulse">
-                               <Smartphone className="text-white text-lg" />
-                             </div>
-                             <div className="text-sm font-medium mb-1">Generating...</div>
-                             <div className="text-xs text-gray-500">Claude is building your app</div>
-                           </div>
-                         </div>
+                        ) : isGenerating ? (
+                          <div className="flex flex-1 items-center justify-center h-full">
+                            <div className="text-center text-gray-600">
+                              <img 
+                                src="/lovable-uploads/1a2e7b31-f804-4664-91f0-25cdce4a91f0.png" 
+                                alt="Loading" 
+                                className="w-16 h-16 mx-auto mb-3 breathe-animation"
+                              />
+                              <div className="text-sm font-medium mb-1">Generating...</div>
+                              <div className="text-xs text-gray-500">myPip is building your app</div>
+                            </div>
+                          </div>
                        ) : (
                          <div className="flex flex-1 items-center justify-center h-full">
                            <div className="text-center text-gray-500">

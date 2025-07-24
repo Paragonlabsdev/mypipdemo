@@ -108,7 +108,22 @@ All colors MUST be HSL.
 
 @layer base {
   * {
-    @apply border-border;
+  @apply border-border;
+}
+
+/* Breathing animation for the loading icon */
+@keyframes breathe {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.breathe-animation {
+  animation: breathe 2s ease-in-out infinite;
+}
   }
 
   body {

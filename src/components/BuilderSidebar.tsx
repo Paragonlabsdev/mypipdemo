@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Settings, DollarSign, Puzzle, Layers, ChevronLeft, ChevronRight, Zap, User, Users, Plus, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { AccountDisplay } from "@/components/AccountDisplay";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
 
 const sidebarItems = [
   { title: "Integrations", url: "/builder/integrations", icon: Puzzle },
@@ -20,16 +21,59 @@ interface BuilderSidebarProps {
   promptCount: number;
 }
 
+// Helper function to get user IP
+const getUserIP = async (): Promise<string> => {
+  try {
+    const response = await fetch('https://api.ipify.org?format=json');
+    const data = await response.json();
+    return data.ip;
+  } catch (error) {
+    console.error('Error getting IP:', error);
+    return 'unknown';
+  }
+};
+
 export const BuilderSidebar = ({ promptCount }: BuilderSidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
   const [showMyPips, setShowMyPips] = useState(false);
-  const [projects] = useState([
-    { id: 1, name: "Flappy Bird Game", lastModified: "2 hours ago" },
-    { id: 2, name: "Calorie Tracker", lastModified: "1 day ago" },
-    { id: 3, name: "Todo App", lastModified: "3 days ago" },
-  ]);
+  const [projects, setProjects] = useState<Array<{id: string; project_name: string; created_at: string; prompt: string; generated_code: string}>>([]);
+  const [loading, setLoading] = useState(false);
   const location = useLocation();
+
+  // Load user projects
+  const loadUserProjects = async () => {
+    setLoading(true);
+    try {
+      const userIP = await getUserIP();
+      const { data, error } = await supabase.functions.invoke('get-user-projects', {
+        body: { userIP }
+      });
+
+      if (error) throw error;
+
+      if (data?.success && data?.projects) {
+        setProjects(data.projects);
+      }
+    } catch (error) {
+      console.error('Failed to load projects:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadUserProjects();
+  }, []);
+
+  // Function to load a specific project
+  const loadProject = (project: any) => {
+    const params = new URLSearchParams();
+    params.set('prompt', project.prompt);
+    params.set('code', project.generated_code);
+    params.set('projectId', project.id);
+    window.location.href = `/builder?${params.toString()}`;
+  };
 
   return (
     <div className={cn(
@@ -105,20 +149,23 @@ export const BuilderSidebar = ({ promptCount }: BuilderSidebarProps) => {
                   </button>
                   {showMyPips && (
                     <ul className="ml-8 mt-2 space-y-1">
-                      {projects.map((project) => (
-                        <li key={project.id}>
-                          <button 
-                            onClick={() => {
-                              // Navigate to builder with project data
-                              window.location.href = "/builder";
-                            }}
-                            className="flex items-center gap-2 px-2 py-1 rounded text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors w-full text-left"
-                          >
-                            <FileText className="h-3 w-3" />
-                            <span className="truncate">{project.name}</span>
-                          </button>
-                        </li>
-                      ))}
+                      {loading ? (
+                        <li className="px-2 py-1 text-xs text-muted-foreground">Loading...</li>
+                      ) : projects.length > 0 ? (
+                        projects.map((project) => (
+                          <li key={project.id}>
+                            <button 
+                              onClick={() => loadProject(project)}
+                              className="flex items-center gap-2 px-2 py-1 rounded text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors w-full text-left"
+                            >
+                              <FileText className="h-3 w-3" />
+                              <span className="truncate">{project.project_name}</span>
+                            </button>
+                          </li>
+                        ))
+                      ) : (
+                        <li className="px-2 py-1 text-xs text-muted-foreground">No projects yet</li>
+                      )}
                     </ul>
                   )}
                 </li>
