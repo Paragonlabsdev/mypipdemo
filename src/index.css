@@ -124,11 +124,9 @@ All colors MUST be HSL.
 .breathe-animation {
   animation: breathe 2s ease-in-out infinite;
 }
-  }
 
-  body {
-    @apply bg-background text-foreground;
-  }
+body {
+  @apply bg-background text-foreground;
 }
 
 @layer utilities {
