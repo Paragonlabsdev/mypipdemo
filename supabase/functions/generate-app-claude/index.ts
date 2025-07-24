@@ -79,7 +79,19 @@ Return a complete HTML document that looks professional and modern, not just tex
     }
 
     const data = await response.json();
-    const generatedCode = data.content[0].text;
+    let generatedCode = data.content[0].text;
+
+    // Extract only the HTML code, removing descriptions
+    const htmlMatch = generatedCode.match(/```html\s*([\s\S]*?)\s*```/);
+    if (htmlMatch) {
+      generatedCode = htmlMatch[1].trim();
+    } else {
+      // If no code blocks found, try to extract HTML document
+      const docMatch = generatedCode.match(/<!DOCTYPE html>[\s\S]*<\/html>/i);
+      if (docMatch) {
+        generatedCode = docMatch[0];
+      }
+    }
 
     console.log('Successfully generated app code');
 
