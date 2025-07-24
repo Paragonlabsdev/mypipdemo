@@ -25,19 +25,13 @@ serve(async (req) => {
 
     console.log('Sending request to Claude Sonnet 3.7...');
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': anthropicApiKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 4000,
-        messages: [{
-          role: 'user',
-          content: `Create a beautiful, modern mobile web app for: ${prompt}
+    // Template detection and enhanced prompts
+    const getPromptTemplate = (userPrompt: string) => {
+      const lowerPrompt = userPrompt.toLowerCase();
+      
+      // Flappy Bird template
+      if (lowerPrompt.includes('flappy') || lowerPrompt.includes('bird game')) {
+        return `Create a beautiful, modern mobile web app for: Flappy bird game
 
 CRITICAL REQUIREMENTS:
 - Generate a complete HTML document with embedded CSS and JavaScript
@@ -67,7 +61,227 @@ STYLING GUIDELINES:
 - Use modern input field styling
 - Add visual feedback for user interactions
 
-Return a complete HTML document that looks professional and modern, not just text. Make it visually stunning!`
+GAME-SPECIFIC FEATURES:
+- Touch/tap controls for bird movement
+- Pipe obstacles with collision detection
+- Score tracking and high score storage
+- Game over screen with restart button
+- Smooth 60fps animation using requestAnimationFrame
+- Bird physics (gravity, jump mechanics)
+- Scrolling background
+- Sound effects using Web Audio API
+
+Return a complete HTML document that looks professional and modern, not just text. Make it visually stunning!`;
+      }
+      
+      // Calorie tracking template
+      if (lowerPrompt.includes('calorie') || lowerPrompt.includes('nutrition') || lowerPrompt.includes('food track')) {
+        return `Create a beautiful, modern mobile web app for: Calorie tracking App
+
+CRITICAL REQUIREMENTS:
+- Generate a complete HTML document with embedded CSS and JavaScript
+- Use modern, attractive UI design with proper spacing and typography
+- Include interactive buttons, cards, forms, and visual components
+- Use a professional color scheme (gradients, modern colors)
+- Add proper shadows, rounded corners, and modern styling
+- Make it fully responsive and touch-friendly for mobile
+- Include smooth animations and transitions
+- Use CSS Grid/Flexbox for perfect layouts
+- Add icons using Unicode symbols or CSS-drawn icons
+- Include proper input fields, buttons with hover effects
+- Use modern typography with good hierarchy
+- Add loading states, success messages, and interactive feedback
+- Include proper navigation if needed
+- Make it look like a real production mobile app
+
+STYLING GUIDELINES:
+- Use modern color palettes (blues, purples, greens with gradients)
+- Include box-shadows for depth
+- Use border-radius for rounded elements
+- Add smooth CSS transitions for interactions
+- Include proper spacing with margins and padding
+- Use modern fonts (system fonts or web fonts)
+- Add visual hierarchy with different font sizes/weights
+- Include hover and active states for buttons
+- Use modern input field styling
+- Add visual feedback for user interactions
+
+CALORIE TRACKING FEATURES:
+- Food search and selection interface
+- Calorie counter with daily goals
+- Meal logging (breakfast, lunch, dinner, snacks)
+- Progress charts and visual indicators
+- Food database with common items
+- Barcode scanner simulation (camera interface)
+- Weight tracking with graphs
+- Water intake tracker
+- Exercise logging with calorie burn
+- Weekly/monthly statistics dashboard
+
+PLACEHOLDER IMAGES:
+- For food photos, use: https://source.unsplash.com/featured/?food
+- For meal images, use: https://source.unsplash.com/featured/?healthy-meal
+- For profile avatars, use CSS gradients or Unicode symbols
+
+Return a complete HTML document that looks professional and modern, not just text. Make it visually stunning!`;
+      }
+      
+      // Instagram style template
+      if (lowerPrompt.includes('instagram') || lowerPrompt.includes('social media') || lowerPrompt.includes('photo sharing')) {
+        return `Create a beautiful, modern mobile web app for: Instagram style app
+
+CRITICAL REQUIREMENTS:
+- Generate a complete HTML document with embedded CSS and JavaScript
+- Use modern, attractive UI design with proper spacing and typography
+- Include interactive buttons, cards, forms, and visual components
+- Use a professional color scheme (gradients, modern colors)
+- Add proper shadows, rounded corners, and modern styling
+- Make it fully responsive and touch-friendly for mobile
+- Include smooth animations and transitions
+- Use CSS Grid/Flexbox for perfect layouts
+- Add icons using Unicode symbols or CSS-drawn icons
+- Include proper input fields, buttons with hover effects
+- Use modern typography with good hierarchy
+- Add loading states, success messages, and interactive feedback
+- Include proper navigation if needed
+- Make it look like a real production mobile app
+
+STYLING GUIDELINES:
+- Use modern color palettes (blues, purples, greens with gradients)
+- Include box-shadows for depth
+- Use border-radius for rounded elements
+- Add smooth CSS transitions for interactions
+- Include proper spacing with margins and padding
+- Use modern fonts (system fonts or web fonts)
+- Add visual hierarchy with different font sizes/weights
+- Include hover and active states for buttons
+- Use modern input field styling
+- Add visual feedback for user interactions
+
+SOCIAL MEDIA FEATURES:
+- Photo feed with infinite scroll
+- Like, comment, and share buttons
+- Story viewer with tap navigation
+- Camera interface for taking photos
+- Photo filters and editing tools
+- User profiles with follower counts
+- Search and discovery features
+- Direct messaging interface
+- Hashtag and mention support
+- Notification center
+
+PLACEHOLDER IMAGES:
+- For user photos, use: https://source.unsplash.com/featured/?portrait
+- For feed posts, use: https://source.unsplash.com/featured/?lifestyle
+- For stories, use: https://source.unsplash.com/featured/?adventure
+
+Return a complete HTML document that looks professional and modern, not just text. Make it visually stunning!`;
+      }
+      
+      // To-do list template
+      if (lowerPrompt.includes('todo') || lowerPrompt.includes('to-do') || lowerPrompt.includes('task') || lowerPrompt.includes('productivity')) {
+        return `Create a beautiful, modern mobile web app for: To-do list
+
+CRITICAL REQUIREMENTS:
+- Generate a complete HTML document with embedded CSS and JavaScript
+- Use modern, attractive UI design with proper spacing and typography
+- Include interactive buttons, cards, forms, and visual components
+- Use a professional color scheme (gradients, modern colors)
+- Add proper shadows, rounded corners, and modern styling
+- Make it fully responsive and touch-friendly for mobile
+- Include smooth animations and transitions
+- Use CSS Grid/Flexbox for perfect layouts
+- Add icons using Unicode symbols or CSS-drawn icons
+- Include proper input fields, buttons with hover effects
+- Use modern typography with good hierarchy
+- Add loading states, success messages, and interactive feedback
+- Include proper navigation if needed
+- Make it look like a real production mobile app
+
+STYLING GUIDELINES:
+- Use modern color palettes (blues, purples, greens with gradients)
+- Include box-shadows for depth
+- Use border-radius for rounded elements
+- Add smooth CSS transitions for interactions
+- Include proper spacing with margins and padding
+- Use modern fonts (system fonts or web fonts)
+- Add visual hierarchy with different font sizes/weights
+- Include hover and active states for buttons
+- Use modern input field styling
+- Add visual feedback for user interactions
+
+TO-DO LIST FEATURES:
+- Add new tasks with input field and submit button
+- Mark tasks as complete/incomplete with checkboxes
+- Delete tasks with swipe or delete button
+- Edit existing tasks inline
+- Task categories or tags with color coding
+- Priority levels (high, medium, low) with visual indicators
+- Due date picker and reminders
+- Progress bar showing completion percentage
+- Filter options (all, active, completed)
+- Search functionality for tasks
+- Local storage to persist tasks
+- Task counter and statistics
+- Drag and drop reordering
+- Bulk actions (select all, delete completed)
+
+PLACEHOLDER IMAGES:
+- For productivity/workspace images, use: https://source.unsplash.com/featured/?productivity
+- For background patterns, use: https://source.unsplash.com/featured/?minimal
+
+Return a complete HTML document that looks professional and modern, not just text. Make it visually stunning!`;
+      }
+      
+      // Default template for other prompts
+      return `Create a beautiful, modern mobile web app for: ${prompt}
+
+CRITICAL REQUIREMENTS:
+- Generate a complete HTML document with embedded CSS and JavaScript
+- Use modern, attractive UI design with proper spacing and typography
+- Include interactive buttons, cards, forms, and visual components
+- Use a professional color scheme (gradients, modern colors)
+- Add proper shadows, rounded corners, and modern styling
+- Make it fully responsive and touch-friendly for mobile
+- Include smooth animations and transitions
+- Use CSS Grid/Flexbox for perfect layouts
+- Add icons using Unicode symbols or CSS-drawn icons
+- Include proper input fields, buttons with hover effects
+- Use modern typography with good hierarchy
+- Add loading states, success messages, and interactive feedback
+- Include proper navigation if needed
+- Make it look like a real production mobile app
+
+STYLING GUIDELINES:
+- Use modern color palettes (blues, purples, greens with gradients)
+- Include box-shadows for depth
+- Use border-radius for rounded elements
+- Add smooth CSS transitions for interactions
+- Include proper spacing with margins and padding
+- Use modern fonts (system fonts or web fonts)
+- Add visual hierarchy with different font sizes/weights
+- Include hover and active states for buttons
+- Use modern input field styling
+- Add visual feedback for user interactions
+
+Return a complete HTML document that looks professional and modern, not just text. Make it visually stunning!`;
+    };
+
+    const enhancedPrompt = getPromptTemplate(prompt);
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': anthropicApiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        messages: [{
+          role: 'user',
+          content: enhancedPrompt
         }]
       })
     });
