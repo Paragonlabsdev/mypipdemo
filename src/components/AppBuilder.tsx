@@ -18,34 +18,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import React from "react";
 
-// Component to render generated React code
-const CodeRenderer = ({ code }: { code: string }) => {
-  const RenderedComponent = useMemo(() => {
-    if (!code) return null;
+// Component to render generated HTML code
+const HtmlRenderer = ({ htmlCode }: { htmlCode: string }) => {
+  if (!htmlCode) return null;
 
-    try {
-      // Extract the main component from the code
-      const componentMatch = code.match(/const\s+(\w+):\s*React\.FC.*?(?=const\s+\w+:|export\s+default|$)/s);
-      if (!componentMatch) return null;
-
-      // Create a safe execution environment
-      const createComponent = new Function('React', 'useState', 'useEffect', `
-        ${code}
-        return ${componentMatch[1] || 'CalorieTracker'};
-      `);
-
-      return createComponent(React, useState, useEffect);
-    } catch (error) {
-      console.error('Error rendering component:', error);
-      return () => React.createElement('div', { 
-        className: 'p-4 text-center text-red-600 text-sm' 
-      }, 'Error rendering app');
-    }
-  }, [code]);
-
-  if (!RenderedComponent) return null;
-
-  return React.createElement(RenderedComponent);
+  return (
+    <iframe
+      srcDoc={htmlCode}
+      className="w-full h-full border-none"
+      sandbox="allow-scripts allow-same-origin"
+      title="Generated App Preview"
+    />
+  );
 };
 
 const AppBuilder = () => {
@@ -237,7 +221,7 @@ const AppBuilder = () => {
                      <div className="flex-1 bg-white">
                        {generatedCode ? (
                          <div className="w-full h-full overflow-auto">
-                           <CodeRenderer code={generatedCode} />
+                           <HtmlRenderer htmlCode={generatedCode} />
                          </div>
                        ) : isGenerating ? (
                          <div className="flex flex-1 items-center justify-center h-full">
@@ -521,7 +505,7 @@ const AppBuilder = () => {
                      <div className="flex-1">
                        {generatedCode ? (
                          <div className="w-full h-full overflow-auto">
-                           <CodeRenderer code={generatedCode} />
+                           <HtmlRenderer htmlCode={generatedCode} />
                          </div>
                        ) : isGenerating ? (
                          <div className="flex flex-1 items-center justify-center h-full">

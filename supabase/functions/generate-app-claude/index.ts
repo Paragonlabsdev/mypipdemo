@@ -40,17 +40,20 @@ serve(async (req) => {
           content: `Generate a complete mobile web app for: ${prompt}
 
 Requirements:
-- Create a fully functional React component with TypeScript
-- Use Tailwind CSS for styling
-- Make it mobile-responsive and touch-friendly
-- Include proper component structure with imports
-- Add comments explaining the functionality
-- Return ONLY valid React/TypeScript code that can be rendered
-- Make it visually appealing with good UX
-- Include state management if needed
-- Add interactive elements appropriate for mobile
+- Create a fully functional HTML page with embedded CSS and JavaScript
+- Use modern CSS (Flexbox/Grid) for mobile-responsive layout
+- Make it touch-friendly and optimized for mobile screens
+- Include interactive JavaScript functionality
+- Use a clean, modern design with good UX
+- Add proper semantic HTML structure
+- Include viewport meta tag and mobile optimizations
+- Return ONLY valid HTML code with <style> and <script> tags embedded
+- Make it visually appealing with smooth animations
+- Ensure all functionality works without external dependencies
+- Use modern JavaScript (ES6+) features
+- Add appropriate touch events for mobile interaction
 
-Return the complete component code that I can directly use in a React app.`
+Return a complete HTML document that can be directly displayed in an iframe or mobile preview.`
         }]
       })
     });
