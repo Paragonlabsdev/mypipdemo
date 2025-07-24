@@ -203,24 +203,27 @@ const AppBuilder = () => {
                     </div>
 
                      <div className="absolute top-10 left-0 right-0 bottom-8 flex flex-col overflow-hidden">
-                      <div className="flex-1 flex items-center justify-center">
-                        {generatedCode ? (
-                          <div className="text-center text-gray-800 p-4">
-                            <div className="text-sm font-medium mb-2">✅ App Generated</div>
-                            <div className="text-xs text-gray-600">Your mobile app is ready!</div>
-                          </div>
-                        ) : isGenerating ? (
-                          <div className="text-center text-gray-600 p-4">
-                            <div className="text-sm font-medium">Generating...</div>
-                            <div className="text-xs mt-1">Claude is building your app</div>
-                          </div>
-                        ) : (
-                          <div className="text-center text-gray-500 p-4">
-                            <div className="text-sm font-medium">Ready to Build</div>
-                            <div className="text-xs mt-1">Enter your app idea below</div>
-                          </div>
-                        )}
-                      </div>
+                     <div className="flex-1 p-2">
+                       {generatedCode ? (
+                         <div className="w-full h-full bg-gray-50 rounded text-xs overflow-auto">
+                           <pre className="p-2 whitespace-pre-wrap font-mono text-gray-800">{generatedCode}</pre>
+                         </div>
+                       ) : isGenerating ? (
+                         <div className="flex flex-1 items-center justify-center">
+                           <div className="text-center text-gray-600">
+                             <div className="text-xs font-medium">Generating...</div>
+                             <div className="text-xs mt-1">Claude is building your app</div>
+                           </div>
+                         </div>
+                       ) : (
+                         <div className="flex flex-1 items-center justify-center">
+                           <div className="text-center text-gray-500">
+                             <div className="text-xs font-medium">Ready to Build</div>
+                             <div className="text-xs mt-1">Enter your app idea below</div>
+                           </div>
+                         </div>
+                       )}
+                     </div>
                      </div>
                   </div>
                 </div>
@@ -363,6 +366,27 @@ const AppBuilder = () => {
                 <span className="text-sm text-muted-foreground">myPip Builder</span>
               </div>
               <div className="flex items-center gap-2">
+                {generatedCode && (
+                  <Button 
+                    size="sm" 
+                    onClick={() => {
+                      const blob = new Blob([generatedCode], { type: 'text/plain' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = 'generated-app.tsx';
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <Code2 className="h-4 w-4 mr-1" />
+                    View Code
+                  </Button>
+                )}
+                
                  <Popover>
                    <PopoverTrigger asChild>
                      <Button variant="ghost" size="sm" className="text-xs hover:bg-gray-200 dark:hover:bg-gray-700">
@@ -461,55 +485,36 @@ const AppBuilder = () => {
                     </div>
                   </div>
 
-                  {/* App Content Area */}
-                  <div className="absolute top-16 left-0 right-0 bottom-12 flex flex-col overflow-hidden">
-                    <div className="flex-1 flex items-center justify-center">
-                      {generatedCode ? (
-                        <div className="text-center text-gray-800 p-6">
-                          <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center">
-                            <span className="text-white text-2xl">✓</span>
-                          </div>
-                          <div className="text-lg font-medium mb-2">App Generated!</div>
-                          <div className="text-sm text-gray-600 mb-4">Your mobile app has been created successfully.</div>
-                          {generatedCode && (
-                            <Button 
-                              size="sm" 
-                              onClick={() => {
-                                const blob = new Blob([generatedCode], { type: 'text/plain' });
-                                const url = URL.createObjectURL(blob);
-                                const a = document.createElement('a');
-                                a.href = url;
-                                a.download = 'generated-app.tsx';
-                                document.body.appendChild(a);
-                                a.click();
-                                document.body.removeChild(a);
-                                URL.revokeObjectURL(url);
-                              }}
-                              className="bg-blue-600 hover:bg-blue-700 text-white text-xs"
-                            >
-                              Download Code
-                            </Button>
-                          )}
-                        </div>
-                      ) : isGenerating ? (
-                        <div className="text-center text-gray-600 p-6">
-                          <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full flex items-center justify-center animate-pulse">
-                            <Smartphone className="text-white text-2xl" />
-                          </div>
-                          <div className="text-lg font-medium mb-2">Generating...</div>
-                          <div className="text-sm text-gray-600">Claude is building your app</div>
-                        </div>
-                      ) : (
-                        <div className="text-center text-gray-500 p-6">
-                          <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center">
-                            <Smartphone className="text-white text-2xl" />
-                          </div>
-                          <div className="text-lg font-medium mb-2">Ready to Build</div>
-                          <div className="text-sm text-gray-600">Enter your app idea in the chat to get started</div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                   {/* App Content Area */}
+                   <div className="absolute top-16 left-0 right-0 bottom-12 flex flex-col overflow-hidden">
+                     <div className="flex-1 p-4">
+                       {generatedCode ? (
+                         <div className="w-full h-full bg-gray-50 rounded-lg overflow-auto text-xs">
+                           <pre className="p-4 whitespace-pre-wrap font-mono text-gray-800">{generatedCode}</pre>
+                         </div>
+                       ) : isGenerating ? (
+                         <div className="flex flex-1 items-center justify-center">
+                           <div className="text-center text-gray-600">
+                             <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full flex items-center justify-center animate-pulse">
+                               <Smartphone className="text-white text-lg" />
+                             </div>
+                             <div className="text-sm font-medium mb-1">Generating...</div>
+                             <div className="text-xs text-gray-500">Claude is building your app</div>
+                           </div>
+                         </div>
+                       ) : (
+                         <div className="flex flex-1 items-center justify-center">
+                           <div className="text-center text-gray-500">
+                             <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center">
+                               <Smartphone className="text-white text-lg" />
+                             </div>
+                             <div className="text-sm font-medium mb-1">Ready to Build</div>
+                             <div className="text-xs text-gray-500">Enter your app idea in the chat to get started</div>
+                           </div>
+                         </div>
+                       )}
+                     </div>
+                   </div>
 
                   {/* Home Indicator */}
                   <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-black rounded-full opacity-60"></div>
