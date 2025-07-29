@@ -136,6 +136,40 @@ const AppBuilder = () => {
     return lastUserMessage?.content || '';
   }, [inputValue, chatHistory]);
 
+  // AI Voice placeholder state management
+  const [aiVoiceState, setAiVoiceState] = useState<'none' | 'loading' | 'first' | 'second'>('none');
+  const [aiVoiceStartTime, setAiVoiceStartTime] = useState<number | null>(null);
+
+  // Handle AI Voice placeholder logic
+  useEffect(() => {
+    const isAiVoice = currentPrompt.toLowerCase().includes('ai voice');
+    
+    if (isAiVoice && aiVoiceState === 'none') {
+      // Start the sequence
+      setAiVoiceState('loading');
+      setAiVoiceStartTime(Date.now());
+      
+      // Show first screenshot after 5 seconds
+      const firstTimeout = setTimeout(() => {
+        setAiVoiceState('first');
+      }, 5000);
+      
+      // Show second screenshot after 30 seconds total (5s loading + 25s first image)
+      const secondTimeout = setTimeout(() => {
+        setAiVoiceState('second');
+      }, 30000);
+      
+      return () => {
+        clearTimeout(firstTimeout);
+        clearTimeout(secondTimeout);
+      };
+    } else if (!isAiVoice && aiVoiceState !== 'none') {
+      // Reset state when prompt no longer contains "ai voice"
+      setAiVoiceState('none');
+      setAiVoiceStartTime(null);
+    }
+  }, [currentPrompt, aiVoiceState]);
+
   // Handle initial prompt and saved project loading
   useEffect(() => {
     const savedCode = searchParams.get("code");
@@ -341,18 +375,38 @@ const AppBuilder = () => {
 
                      <div className="absolute top-7 left-0 right-0 bottom-6 flex flex-col overflow-hidden">
                      <div className="flex-1 bg-white">
-                       {generatedCode ? (
-                         <div className="w-full h-full overflow-auto">
-                           <HtmlRenderer htmlCode={generatedCode} />
-                         </div>
-                        ) : currentPrompt.toLowerCase().includes('ai video') ? (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <img 
-                              src="/lovable-uploads/142aba2d-d950-49b2-901a-f7f26ee9df4a.png" 
-                              alt="AI Video Preview" 
-                              className="w-full h-full object-cover"
-                            />
+                        {generatedCode ? (
+                          <div className="w-full h-full overflow-auto">
+                            <HtmlRenderer htmlCode={generatedCode} />
                           </div>
+                         ) : aiVoiceState === 'loading' ? (
+                           <div className="flex flex-1 items-center justify-center h-full">
+                             <div className="text-center text-gray-600">
+                                <img 
+                                  src="/lovable-uploads/1a2e7b31-f804-4664-91f0-25cdce4a91f0.png" 
+                                  alt="Loading" 
+                                  className="w-8 h-8 mx-auto mb-2 breathe-animation"
+                                />
+                                <div className="text-xs font-medium">Generating...</div>
+                                <div className="text-xs mt-1">AI Voice app loading...</div>
+                             </div>
+                           </div>
+                         ) : aiVoiceState === 'first' ? (
+                           <div className="w-full h-full">
+                             <img 
+                               src="/lovable-uploads/bc239ac5-cab0-43ed-8127-562e54468262.png" 
+                               alt="AI Voice Preview" 
+                               className="w-full h-full object-cover"
+                             />
+                           </div>
+                         ) : aiVoiceState === 'second' ? (
+                           <div className="w-full h-full">
+                             <img 
+                               src="/lovable-uploads/592bb8c5-fd31-456f-81b4-aa95c92e7b66.png" 
+                               alt="AI Voice Generated" 
+                               className="w-full h-full object-cover"
+                             />
+                           </div>
                         ) : isGenerating ? (
                           <div className="flex flex-1 items-center justify-center h-full">
                             <div className="text-center text-gray-600">
@@ -633,18 +687,38 @@ const AppBuilder = () => {
                    {/* App Content Area */}
                    <div className="absolute top-16 left-0 right-0 bottom-12 flex flex-col overflow-hidden bg-white">
                      <div className="flex-1">
-                       {generatedCode ? (
-                         <div className="w-full h-full overflow-auto">
-                           <HtmlRenderer htmlCode={generatedCode} />
-                         </div>
-                        ) : currentPrompt.toLowerCase().includes('ai video') ? (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <img 
-                              src="/lovable-uploads/142aba2d-d950-49b2-901a-f7f26ee9df4a.png" 
-                              alt="AI Video Preview" 
-                              className="w-full h-full object-cover"
-                            />
+                        {generatedCode ? (
+                          <div className="w-full h-full overflow-auto">
+                            <HtmlRenderer htmlCode={generatedCode} />
                           </div>
+                         ) : aiVoiceState === 'loading' ? (
+                           <div className="flex flex-1 items-center justify-center h-full">
+                             <div className="text-center text-gray-600">
+                               <img 
+                                 src="/lovable-uploads/1a2e7b31-f804-4664-91f0-25cdce4a91f0.png" 
+                                 alt="Loading" 
+                                 className="w-16 h-16 mx-auto mb-3 breathe-animation"
+                               />
+                               <div className="text-sm font-medium mb-1">Generating...</div>
+                               <div className="text-xs text-gray-500">AI Voice app loading...</div>
+                             </div>
+                           </div>
+                         ) : aiVoiceState === 'first' ? (
+                           <div className="w-full h-full">
+                             <img 
+                               src="/lovable-uploads/bc239ac5-cab0-43ed-8127-562e54468262.png" 
+                               alt="AI Voice Preview" 
+                               className="w-full h-full object-cover"
+                             />
+                           </div>
+                         ) : aiVoiceState === 'second' ? (
+                           <div className="w-full h-full">
+                             <img 
+                               src="/lovable-uploads/592bb8c5-fd31-456f-81b4-aa95c92e7b66.png" 
+                               alt="AI Voice Generated" 
+                               className="w-full h-full object-cover"
+                             />
+                           </div>
                         ) : isGenerating ? (
                           <div className="flex flex-1 items-center justify-center h-full">
                             <div className="text-center text-gray-600">
