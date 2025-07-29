@@ -129,6 +129,13 @@ const AppBuilder = () => {
   const isMobile = useIsMobile();
   const { toast } = useToast();
 
+  // Get current prompt from input or latest user message
+  const currentPrompt = useMemo(() => {
+    if (inputValue.trim()) return inputValue;
+    const lastUserMessage = chatHistory.filter(msg => msg.type === 'user').pop();
+    return lastUserMessage?.content || '';
+  }, [inputValue, chatHistory]);
+
   // Handle initial prompt and saved project loading
   useEffect(() => {
     const savedCode = searchParams.get("code");
@@ -338,6 +345,14 @@ const AppBuilder = () => {
                          <div className="w-full h-full overflow-auto">
                            <HtmlRenderer htmlCode={generatedCode} />
                          </div>
+                        ) : currentPrompt.toLowerCase().includes('ai video') ? (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <img 
+                              src="/lovable-uploads/142aba2d-d950-49b2-901a-f7f26ee9df4a.png" 
+                              alt="AI Video Preview" 
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
                         ) : isGenerating ? (
                           <div className="flex flex-1 items-center justify-center h-full">
                             <div className="text-center text-gray-600">
@@ -622,6 +637,14 @@ const AppBuilder = () => {
                          <div className="w-full h-full overflow-auto">
                            <HtmlRenderer htmlCode={generatedCode} />
                          </div>
+                        ) : currentPrompt.toLowerCase().includes('ai video') ? (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <img 
+                              src="/lovable-uploads/142aba2d-d950-49b2-901a-f7f26ee9df4a.png" 
+                              alt="AI Video Preview" 
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
                         ) : isGenerating ? (
                           <div className="flex flex-1 items-center justify-center h-full">
                             <div className="text-center text-gray-600">
